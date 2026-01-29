@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 # Create your models here.
-class Profile(models.Model):
+class UserProfile(models.Model):
     ROLE_CHOICES = [
         ('ADMIN', 'Admin'),
         ('TEACHER', 'Teacher'),
@@ -11,34 +11,45 @@ class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     phone = models.CharField(max_length=10, blank=True)
-    photo = models.ImageField(upload_to='profiles/', null=True, blank=True)
+    profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
 
-class Group(models.Model):
+class ClassGroup(models.Model):
     name = models.CharField(max_length=100)
+    subject = models.CharField(max_length=100)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
+    semester = models.CharField(max_length=20)
+    created_at = models.DateTimeField(auto_now_add=True)    
+    is_active = models.BooleanField(default=True)
+
+class StudentProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    student_id = models.CharField(max_length=20, unique=True)
+    class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
+    roll_no = models.CharField(max_length=10)
+    is_active = models.BooleanField(default=True)
+
+class StudentEncollment(models.Model):
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
+    class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+
+
+class AttendanceSession(models.Model):
+    class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
 
-class GroupMember(models.Model):
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-
-class Attendance(models.Model):
+class AttendanceRecord(models.Model):
     STATUS_CHOICES = [
         ('PRESENT', 'Present'),
         ('ABSENT', 'Absent'),
         ('LATE', 'Late')
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    date = models.DateField()
-    time_in = models.TimeField(null=True, blank=True)
-    method = models.CharField(max_length=20)
+    session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE)
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
-
-class AttendanceSession(models.Model):
-    group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    taken_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    date = models.DateField(auto_now_add=True)
-    start_time = models.TimeField(auto_now_add=True)
 
 class QRCode(models.Model):
     session = models.OneToOneField(AttendanceSession, on_delete=models.CASCADE)
