@@ -1,0 +1,352 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - Attendance System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/reports.css'  %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <h1>AttendEase</h1>
+                <p>Teacher Portal</p>
+            </div>
+
+            <nav>
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="dashboard.html" class="nav-link">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                            </svg>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="groups.html" class="nav-link">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            My Groups
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="mark-attendance.html" class="nav-link">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                            </svg>
+                            Mark Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="reports.html" class="nav-link active">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="calendar.html" class="nav-link">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Calendar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="settings.html" class="nav-link">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="user-profile">
+                <div class="user-avatar">JD</div>
+                <div class="user-info">
+                    <h4>John Doe</h4>
+                    <p>Mathematics Teacher</p>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <div class="page-header">
+                <h2>Attendance Reports</h2>
+                <div class="export-buttons">
+                    <button class="btn btn-success">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Export PDF
+                    </button>
+                    <button class="btn btn-primary">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+                        </svg>
+                        Export Excel
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-card">
+                <div class="filters-title">
+                    <svg fill="none" stroke="currentColor" width="20" height="20" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    Filters
+                </div>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>Group/Class</label>
+                        <select>
+                            <option>All Groups</option>
+                            <option>Mathematics - Grade 10A</option>
+                            <option>Advanced Calculus - Grade 12</option>
+                            <option>Mathematics - Grade 9B</option>
+                            <option>Algebra - Grade 11</option>
+                            <option>Geometry - Grade 10B</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date From</label>
+                        <input type="date" value="2026-01-01">
+                    </div>
+                    <div class="filter-group">
+                        <label>Date To</label>
+                        <input type="date" value="2026-01-28">
+                    </div>
+                    <div class="filter-group">
+                        <label>Status</label>
+                        <select>
+                            <option>All Status</option>
+                            <option>Present</option>
+                            <option>Absent</option>
+                            <option>Late</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="filter-actions">
+                    <button class="btn btn-outline">Reset Filters</button>
+                    <button class="btn btn-primary">Apply Filters</button>
+                </div>
+            </div>
+
+            <!-- Statistics Overview -->
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon success">✓</div>
+                    </div>
+                    <div class="stat-value" style="color: var(--success)">1,342</div>
+                    <div class="stat-label">Total Present</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon danger">✗</div>
+                    </div>
+                    <div class="stat-value" style="color: var(--danger)">108</div>
+                    <div class="stat-label">Total Absent</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon warning">⏰</div>
+                    </div>
+                    <div class="stat-value" style="color: var(--warning)">45</div>
+                    <div class="stat-label">Total Late</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon primary">📊</div>
+                    </div>
+                    <div class="stat-value" style="color: var(--primary)">92.8%</div>
+                    <div class="stat-label">Overall Rate</div>
+                </div>
+            </div>
+
+            <!-- Report Table -->
+            <div class="report-card">
+                <div class="report-header">
+                    <h3>Student Attendance Report</h3>
+                    <div class="view-toggle">
+                        <button class="view-btn active">By Student</button>
+                        <button class="view-btn">By Date</button>
+                        <button class="view-btn">Summary</button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Group</th>
+                                <th>Total Classes</th>
+                                <th>Present</th>
+                                <th>Absent</th>
+                                <th>Late</th>
+                                <th>Attendance Rate</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="student-cell">
+                                        <div class="student-avatar-sm">AJ</div>
+                                        <div>
+                                            <div class="student-name">Alice Johnson</div>
+                                            <div class="student-id">S2024001</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Math - Grade 10A</td>
+                                <td>45</td>
+                                <td><span class="status-badge present">42</span></td>
+                                <td><span class="status-badge absent">2</span></td>
+                                <td><span class="status-badge late">1</span></td>
+                                <td>
+                                    <div class="attendance-bar">
+                                        <div class="bar-container">
+                                            <div class="bar-fill" style="width: 95%"></div>
+                                        </div>
+                                        <span class="percentage">95%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="action-btn">View Details</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="student-cell">
+                                        <div class="student-avatar-sm">BM</div>
+                                        <div>
+                                            <div class="student-name">Bob Martinez</div>
+                                            <div class="student-id">S2024002</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Math - Grade 10A</td>
+                                <td>45</td>
+                                <td><span class="status-badge present">41</span></td>
+                                <td><span class="status-badge absent">3</span></td>
+                                <td><span class="status-badge late">1</span></td>
+                                <td>
+                                    <div class="attendance-bar">
+                                        <div class="bar-container">
+                                            <div class="bar-fill" style="width: 93%"></div>
+                                        </div>
+                                        <span class="percentage">93%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="action-btn">View Details</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="student-cell">
+                                        <div class="student-avatar-sm">CL</div>
+                                        <div>
+                                            <div class="student-name">Carol Lee</div>
+                                            <div class="student-id">S2024003</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Math - Grade 10A</td>
+                                <td>45</td>
+                                <td><span class="status-badge present">38</span></td>
+                                <td><span class="status-badge absent">5</span></td>
+                                <td><span class="status-badge late">2</span></td>
+                                <td>
+                                    <div class="attendance-bar">
+                                        <div class="bar-container">
+                                            <div class="bar-fill" style="width: 87%"></div>
+                                        </div>
+                                        <span class="percentage">87%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="action-btn">View Details</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="student-cell">
+                                        <div class="student-avatar-sm">DP</div>
+                                        <div>
+                                            <div class="student-name">David Park</div>
+                                            <div class="student-id">S2024004</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Math - Grade 10A</td>
+                                <td>45</td>
+                                <td><span class="status-badge present">44</span></td>
+                                <td><span class="status-badge absent">0</span></td>
+                                <td><span class="status-badge late">1</span></td>
+                                <td>
+                                    <div class="attendance-bar">
+                                        <div class="bar-container">
+                                            <div class="bar-fill" style="width: 98%"></div>
+                                        </div>
+                                        <span class="percentage">98%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="action-btn">View Details</button>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td>
+                                    <div class="student-cell">
+                                        <div class="student-avatar-sm">EW</div>
+                                        <div>
+                                            <div class="student-name">Emma Wilson</div>
+                                            <div class="student-id">S2024005</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>Math - Grade 10A</td>
+                                <td>45</td>
+                                <td><span class="status-badge present">43</span></td>
+                                <td><span class="status-badge absent">1</span></td>
+                                <td><span class="status-badge late">1</span></td>
+                                <td>
+                                    <div class="attendance-bar">
+                                        <div class="bar-container">
+                                            <div class="bar-fill" style="width: 96%"></div>
+                                        </div>
+                                        <span class="percentage">96%</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button class="action-btn">View Details</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
