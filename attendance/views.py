@@ -1,9 +1,84 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib import messages
 from django.utils.timezone import now
 from .models import *
+from django.http import JsonResponse
+from .forms import RegisterForm
+from django.contrib.auth import login, authenticate, logout
+from .utils import redirect_user_by_role
+import json
+
 
 # Create your views here.
+def register_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        name = data.get("name")
+        email = data.get("email")
+        password = data.get("password")
+        employee_id = data.get("employee_id")
+
+        if User.objects.filter(username = email).exists():
+            return JsonResponse({"error": "Email already exists."}, status = 400)
+        
+        # create user
+        user = User.objects.create_user(
+            username=email,
+            email=email,
+            password=password,
+            first_name = name
+        )
+
+        # create profile
+        UserProfile.objects.create(
+            user = user,
+            role = "TEACHER",
+            phone = ""
+        )
+
+        return JsonResponse({"message": "Registration successful."})
+    return JsonResponse({"email": "Invalid request"}, status = 405)
+
+def login_view(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+
+        email = data.get("email")
+        password = data.get("password")
+
+        user = authenticate(username = email, password = password)
+
+        if user is None:
+            return JsonResponse({"error": "Invalid credentials"}, status = 400)
+        
+        login(request, user)
+
+        role = user.userprofile.role
+
+        if role == "TEACHER":
+            redirect_url = "/teacher/dashboard"
+        elif role == "STUDENT":
+            redirect_url = "student/dashboard"
+        else:
+            redirect_url = "/login"
+
+        return JsonResponse({
+            "message": "Login successful",
+            "redirect_url": redirect_url
+        })
+    
+    return JsonResponse({"error": "Invalid request"}, status = 405)
+
+def logout_view(request):
+    logout(request)
+    return redirect('login')
+
+def auth(request):
+    return render(request, 'signin.html')
+
 def teacher_dashboard(request):
     if request.user.userprofile.role != 'TEACHER':
         return redirect('login')
