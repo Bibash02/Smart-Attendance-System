@@ -13,6 +13,9 @@ class UserProfile(models.Model):
     phone = models.CharField(max_length=10, blank=True)
     profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
 
+    def __str__(self):
+        return f"{self.user.username} - {self.role}"
+
 class ClassGroup(models.Model):
     name = models.CharField(max_length=100)
     subject = models.CharField(max_length=100)
@@ -21,6 +24,9 @@ class ClassGroup(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)    
     is_active = models.BooleanField(default=True)
 
+    def __str__(self):
+        return self.name
+
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     student_id = models.CharField(max_length=20, unique=True)
@@ -28,11 +34,16 @@ class StudentProfile(models.Model):
     roll_no = models.CharField(max_length=10)
     is_active = models.BooleanField(default=True)
 
-class StudentEncollment(models.Model):
+    def __str__(self):
+        return self.user.username
+
+class StudentEnrollment(models.Model):
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
     class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
     joined_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('student', 'class_group')
 
 
 class AttendanceSession(models.Model):
@@ -40,6 +51,9 @@ class AttendanceSession(models.Model):
     date = models.DateField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('class_group', 'date')
 
 class AttendanceRecord(models.Model):
     STATUS_CHOICES = [
@@ -50,6 +64,9 @@ class AttendanceRecord(models.Model):
     session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE)
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
+
+    class Meta:
+        unique_together = ('session', 'student')
 
 class QRCode(models.Model):
     session = models.OneToOneField(AttendanceSession, on_delete=models.CASCADE)
