@@ -8,76 +8,84 @@ from django.http import JsonResponse
 from .forms import RegisterForm
 from django.contrib.auth import login, authenticate, logout
 from .utils import redirect_user_by_role
+from django.views.decorators.csrf import csrf_exempt
 import json
 
-
 # Create your views here.
+def auth(request):
+    return render(request, 'signin.html')
+
 def register_view(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
+    if request.method == "POST":
+        name = request.POST.get("name")
+        email = request.POST.get("email")
+        role = request.POST.get("role")
+        password = request.POST.get("password")
+        confirm = request.POST.get("confirm_password")
 
-        name = data.get("name")
-        email = data.get("email")
-        password = data.get("password")
-        employee_id = data.get("employee_id")
+        if password != confirm:
+            return render(request, 'signin.html', {
+                "reg_error": "Passwords do not match"
+            })
 
-        if User.objects.filter(username = email).exists():
-            return JsonResponse({"error": "Email already exists."}, status = 400)
-        
-        # create user
+        if User.objects.filter(email=email).exists():
+            return render(request, 'signin.html', {
+                "reg_error": "Email already exists"
+            })
+
         user = User.objects.create_user(
             username=email,
             email=email,
             password=password,
-            first_name = name
+            first_name=name
         )
 
-        # create profile
         UserProfile.objects.create(
-            user = user,
-            role = "TEACHER",
-            phone = ""
+            user=user,
+            role=role
         )
 
-        return JsonResponse({"message": "Registration successful."})
-    return JsonResponse({"email": "Invalid request"}, status = 405)
+        return redirect('signin')
+
+    return redirect('signin')
+
 
 def login_view(request):
-    if request.method == 'POST':
-        data = json.loads(request.body)
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
 
-        email = data.get("email")
-        password = data.get("password")
+        try:
+            user_obj = User.objects.get(email=email)
+            user = authenticate(
+                request,
+                username=user_obj.username,
+                password=password
+            )
+        except User.DoesNotExist:
+            user = None
 
-        user = authenticate(username = email, password = password)
+        if user:
+            login(request, user)
 
-        if user is None:
-            return JsonResponse({"error": "Invalid credentials"}, status = 400)
-        
-        login(request, user)
+            role = user.userprofile.role
+            if role == "TEACHER":
+                return redirect('teacher_dashboard')
+            elif role == "STUDENT":
+                return redirect('student_dashboard')
 
-        role = user.userprofile.role
-
-        if role == "TEACHER":
-            redirect_url = "/teacher/dashboard"
-        elif role == "STUDENT":
-            redirect_url = "student/dashboard"
-        else:
-            redirect_url = "/login"
-
-        return JsonResponse({
-            "message": "Login successful",
-            "redirect_url": redirect_url
+        return render(request, 'signin.html', {
+            "login_error": "Invalid email or password"
         })
-    
-    return JsonResponse({"error": "Invalid request"}, status = 405)
+
+    return redirect('signin')
 
 def logout_view(request):
     logout(request)
     return redirect('login')
 
-def auth(request):
-    return render(request, 'signin.html')
+def forgot_password(request):
+    pass
 
 def teacher_dashboard(request):
     if request.user.userprofile.role != 'TEACHER':
@@ -186,3 +194,6 @@ def qr_attendance(request):
 
 def reports(request):
     return render(request, 'reports.html')
+
+def student_dashboard(request):
+    pass
