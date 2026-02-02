@@ -49,7 +49,6 @@ def register_view(request):
 
     return redirect('signin')
 
-
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
@@ -109,21 +108,28 @@ def teacher_dashboard(request):
     ).count()
 
     present_records = AttendanceRecord.objects.filter(
-        session__class_group__in = classes,
-        status = 'PRESENT'
+        session__class_group__in=classes,
+        status='PRESENT'
     ).count()
 
-    avg_attendance = (
-        (present_records / total_records) * 100
-        if total_records > 0 else 0
+    avg_attendance = round(
+        (present_records / total_records) * 100, 2
+    ) if total_records > 0 else 0
+
+    # Sessions created TODAY
+    sessions_today = AttendanceSession.objects.filter(
+        class_group__in=classes,
+        date=today
     )
 
-    sessions_today = AttendanceSession.objects.filter(
-        class_group__in = classes,
-    ).count()
+    # Classes that already have attendance today
+    classes_with_attendance = sessions_today.values_list(
+        'class_group_id', flat=True
+    )
 
+    # Pending = classes WITHOUT attendance today
     pending_today = classes.exclude(
-        id__in = sessions_today
+        id__in=classes_with_attendance
     ).count()
 
     context = {
