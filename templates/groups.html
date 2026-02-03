@@ -7,6 +7,103 @@
     <title>My Groups - Attendance System</title>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/groups.css' %}">
+    <link rel="stylesheet" href="{% static 'css/teacher.css' %}">
+    <style>
+        /* Page Header */
+    .page-header {
+        margin-bottom: 20px;
+    }
+
+    .page-header h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    /* Filter Bar */
+    .filter-bar {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        flex-wrap: wrap;
+        margin-bottom: 30px;
+    }
+
+    /* Search Box */
+    .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        padding: 10px 14px;
+        border-radius: 10px;
+        width: 260px;
+        transition: all 0.3s ease;
+    }
+
+    .search-box svg {
+        width: 18px;
+        height: 18px;
+        color: #6b7280;
+    }
+
+    .search-box input {
+        border: none;
+        outline: none;
+        width: 100%;
+        font-size: 14px;
+        font-family: 'Outfit', sans-serif;
+        color: #374151;
+        background: transparent;
+    }
+
+    .search-box input::placeholder {
+        color: #9ca3af;
+    }
+
+    .search-box:focus-within {
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    /* Filter Select Dropdown */
+    .filter-select {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 1px solid #e5e7eb;
+        background: #ffffff;
+        font-size: 14px;
+        font-family: 'Outfit', sans-serif;
+        color: #374151;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .filter-select:hover {
+        border-color: #c7d2fe;
+    }
+
+    .filter-select:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .filter-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .search-box,
+        .filter-select {
+            width: 100%;
+        }
+    }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -93,10 +190,9 @@
                 </div>
                 <select class="filter-select">
                     <option>All Grades</option>
-                    <option>Grade 9</option>
-                    <option>Grade 10</option>
-                    <option>Grade 11</option>
-                    <option>Grade 12</option>
+                    {% for grade in grades %}
+                        <option value="{{grade.id}}"> {{ grade.name }} </option>
+                    {% endfor %}
                 </select>
                 <select class="filter-select">
                     <option>Sort by: Name</option>
@@ -193,168 +289,6 @@
                         </div>
                         <div class="stat-item">
                             <div class="stat-value">3</div>
-                            <div class="stat-label">Absent</div>
-                        </div>
-                    </div>
-
-                    <div class="card-actions">
-                        <a href="mark-attendance.html" class="btn btn-primary">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                            </svg>
-                            Mark Attendance
-                        </a>
-                        <a href="group-details.html" class="btn btn-outline">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            View Details
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Group Card 3 -->
-                <div class="group-card">
-                    <div class="group-header">
-                        <div class="group-icon">√</div>
-                        <span class="status-badge active">Active</span>
-                    </div>
-                    <h3 class="group-title">Mathematics - Grade 9B</h3>
-                    <div class="group-meta">
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            30 Students
-                        </span>
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            2:00 - 3:30 PM
-                        </span>
-                    </div>
-
-                    <div class="stats-row">
-                        <div class="stat-item">
-                            <div class="stat-value" style="color: var(--success)">91%</div>
-                            <div class="stat-label">Attendance</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">27</div>
-                            <div class="stat-label">Present</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">3</div>
-                            <div class="stat-label">Absent</div>
-                        </div>
-                    </div>
-
-                    <div class="card-actions">
-                        <a href="mark-attendance.html" class="btn btn-primary">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                            </svg>
-                            Mark Attendance
-                        </a>
-                        <a href="group-details.html" class="btn btn-outline">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            View Details
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Group Card 4 -->
-                <div class="group-card">
-                    <div class="group-header">
-                        <div class="group-icon">Σ</div>
-                        <span class="status-badge active">Active</span>
-                    </div>
-                    <h3 class="group-title">Algebra - Grade 11</h3>
-                    <div class="group-meta">
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            26 Students
-                        </span>
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            10:00 - 11:30 AM
-                        </span>
-                    </div>
-
-                    <div class="stats-row">
-                        <div class="stat-item">
-                            <div class="stat-value" style="color: var(--success)">96%</div>
-                            <div class="stat-label">Attendance</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">25</div>
-                            <div class="stat-label">Present</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">1</div>
-                            <div class="stat-label">Absent</div>
-                        </div>
-                    </div>
-
-                    <div class="card-actions">
-                        <a href="mark-attendance.html" class="btn btn-primary">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                            </svg>
-                            Mark Attendance
-                        </a>
-                        <a href="group-details.html" class="btn btn-outline">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            View Details
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Group Card 5 -->
-                <div class="group-card">
-                    <div class="group-header">
-                        <div class="group-icon">△</div>
-                        <span class="status-badge active">Active</span>
-                    </div>
-                    <h3 class="group-title">Geometry - Grade 10B</h3>
-                    <div class="group-meta">
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            34 Students
-                        </span>
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            1:00 - 2:30 PM
-                        </span>
-                    </div>
-
-                    <div class="stats-row">
-                        <div class="stat-item">
-                            <div class="stat-value" style="color: var(--success)">88%</div>
-                            <div class="stat-label">Attendance</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">30</div>
-                            <div class="stat-label">Present</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">4</div>
                             <div class="stat-label">Absent</div>
                         </div>
                     </div>

@@ -137,7 +137,10 @@ def teacher_dashboard(request):
         'total_students': total_students,
         'avg_attendace': avg_attendance,
         'pending_today': pending_today,
-        'classes': classes
+        'classes': classes,
+        'teacher': request.user,
+        'profile': request.user.userprofile,
+        'now': now()
     }
 
     return render(request, 'teacher_dashboard.html', context)
@@ -192,8 +195,17 @@ def student_dashboard(request):
         'records': records
     })
 
-def groups(request):
-    return render(request, 'groups.html')
+def teacher_groups(request):
+    grades = Grade.objects.filter(is_active = True)
+
+    groups = ClassGroup.objects.filter(
+        teacher = request.user,
+        is_active = True
+    )
+    return render(request, 'groups.html', {
+        'grades': grades,
+        'groups': groups
+    })
 
 def qr_attendance(request):
     return render(request, 'qr-attendance.html')
