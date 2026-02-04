@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,651 +6,67 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Profile - Smart Attendance</title>
     <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700;800&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1;
-            --primary-light: #818cf8;
-            --secondary: #14b8a6;
-            --accent: #f59e0b;
-            --danger: #ef4444;
-            --success: #10b981;
-            --bg-main: #fafbfc;
-            --bg-card: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --border: #e2e8f0;
-            --shadow: rgba(15, 23, 42, 0.08);
-        }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Raleway', sans-serif;
-            background: var(--bg-main);
-            color: var(--text-primary);
-            line-height: 1.6;
-        }
-
-        /* Decorative background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 50%;
-            height: 100%;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(20, 184, 166, 0.05));
-            clip-path: polygon(30% 0, 100% 0, 100% 100%, 0 100%);
-            z-index: 0;
-        }
-
-        .container {
-            position: relative;
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 2rem;
-            z-index: 1;
-        }
-
-        /* Header */
-        .page-header {
-            margin-bottom: 3rem;
-            animation: slideDown 0.6s ease-out;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: var(--primary);
-            text-decoration: none;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .back-link:hover {
-            transform: translateX(-5px);
-            color: var(--primary-light);
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: var(--text-primary);
-            margin-bottom: 0.5rem;
-        }
-
-        .subtitle {
-            color: var(--text-secondary);
-            font-size: 1.1rem;
-        }
-
-        /* Profile Layout */
-        .profile-layout {
-            display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 2rem;
-        }
-
-        /* Profile Sidebar */
-        .profile-sidebar {
-            animation: fadeInLeft 0.6s ease-out 0.2s backwards;
-        }
-
-        @keyframes fadeInLeft {
-            from {
-                opacity: 0;
-                transform: translateX(-30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .profile-card {
-            background: var(--bg-card);
-            border-radius: 24px;
-            padding: 2.5rem;
-            box-shadow: 0 4px 20px var(--shadow);
-            text-align: center;
-            margin-bottom: 1.5rem;
-            border: 1px solid var(--border);
-        }
-
-        .avatar-container {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            margin: 0 auto 1.5rem;
-        }
-
-        .avatar {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3rem;
-            font-weight: 700;
-            color: white;
-            border: 4px solid white;
-            box-shadow: 0 8px 24px var(--shadow);
-        }
-
-        .avatar-badge {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            width: 40px;
-            height: 40px;
-            background: var(--success);
-            border-radius: 50%;
-            border: 3px solid white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-        }
-
-        .profile-name {
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .profile-id {
-            color: var(--text-secondary);
-            font-family: 'Courier Prime', monospace;
-            font-size: 0.95rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .profile-stats {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1rem;
-            margin-top: 2rem;
-        }
-
-        .stat-box {
-            padding: 1rem;
-            background: var(--bg-main);
-            border-radius: 12px;
-        }
-
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: var(--primary);
-            font-family: 'Courier Prime', monospace;
-        }
-
-        .stat-label {
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            margin-top: 0.25rem;
-        }
-
-        .change-photo-btn {
-            width: 100%;
-            padding: 1rem;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 1.5rem;
-            transition: all 0.3s ease;
-        }
-
-        .change-photo-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        /* Quick Links */
-        .quick-links {
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px var(--shadow);
-            border: 1px solid var(--border);
-        }
-
-        .quick-links h3 {
-            font-size: 1.1rem;
-            margin-bottom: 1rem;
-            color: var(--text-primary);
-        }
-
-        .link-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
-            border-radius: 10px;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-            color: var(--text-primary);
-        }
-
-        .link-item:hover {
-            background: var(--bg-main);
-            transform: translateX(5px);
-        }
-
-        .link-icon {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            border-radius: 10px;
-            color: white;
-            font-size: 1.2rem;
-        }
-
-        .link-content {
-            flex: 1;
-            margin-left: 1rem;
-        }
-
-        .link-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
-        .link-subtitle {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        /* Main Content */
-        .profile-main {
-            animation: fadeInRight 0.6s ease-out 0.3s backwards;
-        }
-
-        @keyframes fadeInRight {
-            from {
-                opacity: 0;
-                transform: translateX(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 2rem;
-            border-bottom: 2px solid var(--border);
-        }
-
-        .tab {
-            padding: 1rem 2rem;
-            background: none;
-            border: none;
-            color: var(--text-secondary);
-            font-family: 'Raleway', sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            position: relative;
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            color: var(--primary);
-        }
-
-        .tab.active::after {
-            content: '';
-            position: absolute;
-            bottom: -2px;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: var(--primary);
-        }
-
-        .tab-content {
-            display: none;
-        }
-
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.4s ease-out;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        /* Form Section */
-        .form-section {
-            background: var(--bg-card);
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 4px 20px var(--shadow);
-            margin-bottom: 2rem;
-            border: 1px solid var(--border);
-        }
-
-        .section-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .section-title::before {
-            content: '';
-            width: 4px;
-            height: 24px;
-            background: linear-gradient(180deg, var(--primary), var(--secondary));
-            border-radius: 2px;
-        }
-
-        .form-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 1.5rem;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .form-group.full-width {
-            grid-column: 1 / -1;
-        }
-
-        .form-label {
-            font-weight: 600;
-            color: var(--text-primary);
-            font-size: 0.95rem;
-        }
-
-        .form-input,
-        .form-select,
-        .form-textarea {
-            padding: 0.875rem 1.25rem;
-            border: 2px solid var(--border);
-            border-radius: 10px;
-            font-family: 'Raleway', sans-serif;
-            font-size: 1rem;
-            transition: all 0.3s ease;
-            background: white;
-        }
-
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .form-textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
-
-        .form-input:disabled {
-            background: var(--bg-main);
-            cursor: not-allowed;
-        }
-
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-            justify-content: flex-end;
-            margin-top: 2rem;
-        }
-
-        .btn {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 10px;
-            font-family: 'Raleway', sans-serif;
-            font-weight: 600;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-            color: white;
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
-        }
-
-        .btn-secondary {
-            background: var(--bg-main);
-            color: var(--text-primary);
-            border: 2px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: var(--border);
-        }
-
-        /* Settings List */
-        .settings-list {
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .setting-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1.5rem;
-            background: var(--bg-card);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-        }
-
-        .setting-info h4 {
-            font-size: 1.1rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .setting-info p {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-        }
-
-        /* Toggle Switch */
-        .toggle-switch {
-            position: relative;
-            width: 60px;
-            height: 30px;
-        }
-
-        .toggle-switch input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: var(--border);
-            transition: 0.4s;
-            border-radius: 30px;
-        }
-
-        .toggle-slider:before {
-            position: absolute;
-            content: "";
-            height: 22px;
-            width: 22px;
-            left: 4px;
-            bottom: 4px;
-            background-color: white;
-            transition: 0.4s;
-            border-radius: 50%;
-        }
-
-        input:checked + .toggle-slider {
-            background: linear-gradient(135deg, var(--primary), var(--primary-light));
-        }
-
-        input:checked + .toggle-slider:before {
-            transform: translateX(30px);
-        }
-
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .profile-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 768px) {
-            h1 {
-                font-size: 2rem;
-            }
-
-            .tabs {
-                overflow-x: auto;
-            }
-
-            .tab {
-                padding: 0.75rem 1.5rem;
-                white-space: nowrap;
-            }
-
-            .form-actions {
-                flex-direction: column;
-            }
-
-            .btn {
-                width: 100%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/student_profile.css' %}">
 </head>
 <body>
     <div class="container">
         <!-- Header -->
         <div class="page-header">
-            <a href="student-dashboard.html" class="back-link">← Back to Dashboard</a>
+            <a href="{% url 'student_dashboard' %}" class="back-link">← Back to Dashboard</a>
             <h1>My Profile</h1>
             <p class="subtitle">Manage your personal information and preferences</p>
         </div>
 
-        <!-- Profile Layout -->
-        <div class="profile-layout">
-            <!-- Sidebar -->
-            <div class="profile-sidebar">
-                <!-- Profile Card -->
-                <div class="profile-card">
-                    <div class="avatar-container">
-                        <div class="avatar">AS</div>
-                        <div class="avatar-badge">✓</div>
-                    </div>
-                    <h2 class="profile-name">Alex Smith</h2>
-                    <p class="profile-id">STU-2024-001</p>
-                    
-                    <div class="profile-stats">
-                        <div class="stat-box">
-                            <div class="stat-value">94.5%</div>
-                            <div class="stat-label">Attendance</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">4.0</div>
-                            <div class="stat-label">GPA</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">6</div>
-                            <div class="stat-label">Subjects</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-value">12</div>
-                            <div class="stat-label">Day Streak</div>
-                        </div>
-                    </div>
-                    
-                    <button class="change-photo-btn">📷 Change Photo</button>
-                </div>
+        <!-- Profile Card -->
+        <div class="profile-card">
 
-                <!-- Quick Links -->
-                <div class="quick-links">
-                    <h3>Quick Actions</h3>
-                    <a href="my-attendance.html" class="link-item">
-                        <div class="link-icon">📊</div>
-                        <div class="link-content">
-                            <div class="link-title">View Attendance</div>
-                            <div class="link-subtitle">Check your records</div>
-                        </div>
-                        <span>→</span>
-                    </a>
-                    <a href="class-schedule.html" class="link-item">
-                        <div class="link-icon">📅</div>
-                        <div class="link-content">
-                            <div class="link-title">Class Schedule</div>
-                            <div class="link-subtitle">View timetable</div>
-                        </div>
-                        <span>→</span>
-                    </a>
-                    <a href="mark-attendance.html" class="link-item">
-                        <div class="link-icon">📸</div>
-                        <div class="link-content">
-                            <div class="link-title">Mark Attendance</div>
-                            <div class="link-subtitle">Face scan</div>
-                        </div>
-                        <span>→</span>
-                    </a>
-                </div>
+            <div class="avatar-container">
+                {% if profile.profile_image %}
+                    <img src="{{ profile.profile_image.url }}" class="avatar">
+                {% else %}
+                    <div class="avatar">
+                        {{ user.first_name|slice:":1"|upper }}{{ user.last_name|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+                <div class="avatar-badge">✓</div>
             </div>
 
+            <h2 class="profile-name">
+                {{ user.get_full_name|default:user.username }}
+            </h2>
+
+            <p class="profile-id">
+                {{ profile.role }} ID: {{ user.id }}
+            </p>
+            
+            <div class="profile-stats">
+                <div class="stat-box">
+                    <div class="stat-value">{{ attendance_percentage }}%</div>
+                    <div class="stat-label">Attendance</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-value">{{ gpa|default:"N/A" }}</div>
+                    <div class="stat-label">GPA</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-value">{{ subjects_count }}</div>
+                    <div class="stat-label">Subjects</div>
+                </div>
+
+                <div class="stat-box">
+                    <div class="stat-value">{{ day_streak }}</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+            </div>
+            
+            <a href="" class="change-photo-btn">
+                📷 Change Photo
+            </a>
+
+        </div>
+        <div>
             <!-- Main Content -->
             <div class="profile-main">
                 <!-- Tabs -->
@@ -662,74 +79,91 @@
 
                 <!-- Personal Info Tab -->
                 <div class="tab-content active" id="personal">
-                    <div class="form-section">
-                        <h3 class="section-title">Basic Information</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">First Name</label>
-                                <input type="text" class="form-input" value="Alex">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Last Name</label>
-                                <input type="text" class="form-input" value="Smith">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Email Address</label>
-                                <input type="email" class="form-input" value="alex.smith@university.edu">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Phone Number</label>
-                                <input type="tel" class="form-input" value="+1 (555) 123-4567">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Date of Birth</label>
-                                <input type="date" class="form-input" value="2002-05-15">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Gender</label>
-                                <select class="form-select">
-                                    <option>Male</option>
-                                    <option>Female</option>
-                                    <option>Other</option>
-                                    <option>Prefer not to say</option>
-                                </select>
-                            </div>
-                            <div class="form-group full-width">
-                                <label class="form-label">Address</label>
-                                <textarea class="form-textarea">123 University Street, Campus Town, ST 12345</textarea>
-                            </div>
-                        </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary">Cancel</button>
-                            <button class="btn btn-primary">Save Changes</button>
-                        </div>
-                    </div>
+                    <form method="POST">
+                        {% csrf_token %}
 
-                    <div class="form-section">
-                        <h3 class="section-title">Emergency Contact</h3>
-                        <div class="form-grid">
-                            <div class="form-group">
-                                <label class="form-label">Contact Name</label>
-                                <input type="text" class="form-input" value="John Smith">
+                        <div class="form-section">
+                            <h3 class="section-title">Basic Information</h3>
+                            <div class="form-grid">
+
+                                <div class="form-group">
+                                    <label class="form-label">First Name</label>
+                                    <input type="text" class="form-input" name="first_name"
+                                        value="{{ user.first_name }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Last Name</label>
+                                    <input type="text" class="form-input" name="last_name"
+                                        value="{{ user.last_name }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" class="form-input" name="email"
+                                        value="{{ user.email }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-input" name="phone"
+                                        value="{{ profile.phone }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Role</label>
+                                    <input type="text" class="form-input" value="{{ profile.role }}" disabled>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label class="form-label">Username</label>
+                                    <textarea class="form-textarea" disabled>{{ user.username }}</textarea>
+                                </div>
+
                             </div>
-                            <div class="form-group">
-                                <label class="form-label">Relationship</label>
-                                <input type="text" class="form-input" value="Father">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Contact Phone</label>
-                                <input type="tel" class="form-input" value="+1 (555) 987-6543">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Contact Email</label>
-                                <input type="email" class="form-input" value="john.smith@email.com">
+
+                            <div class="form-actions">
+                                <button type="reset" class="btn btn-secondary">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
                             </div>
                         </div>
-                        <div class="form-actions">
-                            <button class="btn btn-secondary">Cancel</button>
-                            <button class="btn btn-primary">Save Changes</button>
+
+                        <div class="form-section">
+                            <h3 class="section-title">Emergency Contact</h3>
+                            <div class="form-grid">
+
+                                <div class="form-group">
+                                    <label class="form-label">Contact Name</label>
+                                    <input type="text" class="form-input" name="emergency_name"
+                                        value="{{ profile.emergency_name|default:'' }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Relationship</label>
+                                    <input type="text" class="form-input" name="emergency_relation"
+                                        value="{{ profile.emergency_relation|default:'' }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Contact Phone</label>
+                                    <input type="tel" class="form-input" name="emergency_phone"
+                                        value="{{ profile.emergency_phone|default:'' }}">
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Contact Email</label>
+                                    <input type="email" class="form-input" name="emergency_email"
+                                        value="{{ profile.emergency_email|default:'' }}">
+                                </div>
+
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="reset" class="btn btn-secondary">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
 
                 <!-- Academic Details Tab -->

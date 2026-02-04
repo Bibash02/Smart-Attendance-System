@@ -98,6 +98,19 @@
             font-size: 1.1rem;
         }
 
+        .user-info-link {
+            display: inline-block;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .user-info-link:focus,
+        .user-info-link:active,
+        .user-info-link:hover {
+            text-decoration: none;
+            color: inherit;
+        }
+
         .user-info {
             display: flex;
             align-items: center;

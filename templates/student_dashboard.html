@@ -15,17 +15,34 @@
         <!-- Header -->
         <header class="header">
             <div class="header-content">
+
                 <div class="welcome-section">
-                    <h1>Welcome back, Alex! 👋</h1>
+                    <h1>
+                        Welcome back,
+                        {{ user.first_name|default:user.username }}! 👋
+                    </h1>
                     <p>Here's your attendance overview for today</p>
                 </div>
-                <div class="user-info">
-                    <div class="user-avatar">AS</div>
-                    <div class="user-details">
-                        <h3>Alex Smith</h3>
-                        <p>ID: STU-2024-001</p>
+                
+                <a href="{% url 'student_profile' %}" class="user-info-link">
+                    <div class="user-info">
+
+                        {% if profile.profile_image %}
+                            <img src="{{ profile.profile_image.url }}" class="user-avatar-img">
+                        {% else %}
+                            <div class="user-avatar">
+                                {{ user.first_name|slice:":1"|upper }}
+                                {{ user.last_name|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+
+                        <div class="user-details">
+                            <h3>{{ user.get_full_name|default:user.username }}</h3>
+                            <p>Role: {{ profile.role }}</p>
+                        </div>
                     </div>
-                </div>
+                </a>
+
             </div>
         </header>
 

@@ -3,6 +3,8 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils.timezone import now
+from django.utils import timezone
+from django.db.models import Count
 from .models import *
 from django.http import JsonResponse
 from .forms import RegisterForm
@@ -181,20 +183,6 @@ def mark_attendance(request, session_id):
         'students': students
     })
 
-def student_dashboard(request):
-    # if request.user.userprofile.role != 'STUDENT':
-    #     return redirect('login')
-    
-    # student = request.user.userprofle
-
-    # records = AttendanceRecord.objects.filter(
-    #     student = student,
-    # ).select_related('session', 'session__class_group')
-
-    # return render(request, 'student_dashboard.html', {
-    #     'records': records
-    # })
-    return render(request, 'student_dashboard.html')
 
 def teacher_groups(request):
     grades = Grade.objects.filter(is_active = True)
@@ -214,6 +202,17 @@ def qr_attendance(request):
 def reports(request):
     return render(request, 'reports.html')
 
+def student_dashboard(request):
+    user = request.user
+    profile = user.userprofile
+
+    context = {
+        'user': user,
+        'profile': profile,
+    }
+
+    return render(request, 'student_dashboard.html', context)
+
 def student_attendance(request):
     return render(request, 'student-attendance.html')
 
@@ -224,4 +223,79 @@ def student_mark_attendance(request):
     return render(request, 'student_mark_attendance.html')
 
 def student_profile(request):
-    return render(request, 'student_profile.html')
+    user = request.user
+    profile = UserProfile.objects.get(user=user)
+
+    # ---- Attendance Percentage ----
+    total_records = AttendanceRecord.objects.filter(
+        student__user=user
+    ).count()
+
+    present_records = AttendanceRecord.objects.filter(
+        student__user=user,
+        status='PRESENT'
+    ).count()
+
+    attendance_percentage = (
+        round((present_records / total_records) * 100, 2)
+        if total_records > 0 else 0
+    )
+
+    # ---- Subjects Count ----
+    subjects_count = ClassGroup.objects.filter(
+        studentprofile__user=user,
+        is_active=True
+    ).distinct().count()
+
+    # ---- Day Streak (simple version) ----
+    today = timezone.now().date()
+    streak = 0
+
+    for i in range(0, 30):
+        date = today - timezone.timedelta(days=i)
+        if AttendanceRecord.objects.filter(
+            student__user=user,
+            session__date=date,
+            status='PRESENT'
+        ).exists():
+            streak += 1
+        else:
+            break
+
+    context = {
+        'user': user,
+        'profile': profile,
+        'attendance_percentage': attendance_percentage,
+        'subjects_count': subjects_count,
+        'day_streak': streak,
+    }
+
+    return render(request, 'student_profile.html', context)
+
+def student_profile_edit(request):
+    user = request.user
+    profile = get_object_or_404(UserProfile, user=user)
+
+    if request.method == "POST":
+        # Update basic user info
+        user.first_name = request.POST.get("first_name", user.first_name)
+        user.last_name = request.POST.get("last_name", user.last_name)
+        user.email = request.POST.get("email", user.email)
+        user.save()
+
+        # Update profile info
+        profile.phone = request.POST.get("phone", profile.phone)
+        profile.role = request.POST.get("role", profile.role)
+
+        # Handle profile image if uploaded
+        if "profile_image" in request.FILES:
+            profile.profile_image = request.FILES["profile_image"]
+
+        profile.save()
+
+        return redirect("student_profile")  # redirect safely
+
+    return render(request, "student_profile_edit.html", {
+        "user": user,
+        "profile": profile
+    })
