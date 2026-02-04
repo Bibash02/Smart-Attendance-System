@@ -182,18 +182,19 @@ def mark_attendance(request, session_id):
     })
 
 def student_dashboard(request):
-    if request.user.userprofile.role != 'STUDENT':
-        return redirect('login')
+    # if request.user.userprofile.role != 'STUDENT':
+    #     return redirect('login')
     
-    student = request.user.userprofle
+    # student = request.user.userprofle
 
-    records = AttendanceRecord.objects.filter(
-        student = student,
-    ).select_related('session', 'session__class_group')
+    # records = AttendanceRecord.objects.filter(
+    #     student = student,
+    # ).select_related('session', 'session__class_group')
 
-    return render(request, 'student_dashboard.html', {
-        'records': records
-    })
+    # return render(request, 'student_dashboard.html', {
+    #     'records': records
+    # })
+    return render(request, 'student_dashboard.html')
 
 def teacher_groups(request):
     grades = Grade.objects.filter(is_active = True)
@@ -213,5 +214,14 @@ def qr_attendance(request):
 def reports(request):
     return render(request, 'reports.html')
 
-def student_dashboard(request):
-    pass
+def student_attendance(request):
+    return render(request, 'student-attendance.html')
+
+def student_class_schedule(request):
+    return render(request, 'student_class_schedule.html')
+
+def student_mark_attendance(request):
+    return render(request, 'student_mark_attendance.html')
+
+def student_profile(request):
+    return render(request, 'student_profile.html')

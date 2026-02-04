@@ -1,0 +1,192 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard - Smart Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/student.css' %}">
+</head>
+<body>
+    <div class="bg-pattern"></div>
+    
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="welcome-section">
+                    <h1>Welcome back, Alex! 👋</h1>
+                    <p>Here's your attendance overview for today</p>
+                </div>
+                <div class="user-info">
+                    <div class="user-avatar">AS</div>
+                    <div class="user-details">
+                        <h3>Alex Smith</h3>
+                        <p>ID: STU-2024-001</p>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card attendance">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value">94.5%</div>
+                        <div class="stat-label">Attendance Rate</div>
+                    </div>
+                    <div class="stat-icon">📊</div>
+                </div>
+            </div>
+
+            <div class="stat-card classes">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value">24</div>
+                        <div class="stat-label">Classes This Week</div>
+                    </div>
+                    <div class="stat-icon">📚</div>
+                </div>
+            </div>
+
+            <div class="stat-card absences">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value">3</div>
+                        <div class="stat-label">Total Absences</div>
+                    </div>
+                    <div class="stat-icon">⚠️</div>
+                </div>
+            </div>
+
+            <div class="stat-card streak">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-value">12</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                    <div class="stat-icon">⭐</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content-grid">
+            <!-- Today's Classes -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Today's Schedule</h2>
+                    <a href="class-schedule.html" class="view-all">View Full Schedule</a>
+                </div>
+
+                <div class="class-item">
+                    <div class="class-time">⏰ 08:00 - 09:30</div>
+                    <div class="class-name">Advanced Mathematics</div>
+                    <div class="class-teacher">Prof. Johnson</div>
+                    <span class="class-status present">✓ Present</span>
+                </div>
+
+                <div class="class-item">
+                    <div class="class-time">⏰ 10:00 - 11:30</div>
+                    <div class="class-name">Data Structures</div>
+                    <div class="class-teacher">Dr. Williams</div>
+                    <span class="class-status present">✓ Present</span>
+                </div>
+
+                <div class="class-item">
+                    <div class="class-time">⏰ 13:00 - 14:30</div>
+                    <div class="class-name">Web Development</div>
+                    <div class="class-teacher">Prof. Anderson</div>
+                    <span class="class-status upcoming">⏳ Upcoming</span>
+                </div>
+
+                <div class="class-item">
+                    <div class="class-time">⏰ 15:00 - 16:30</div>
+                    <div class="class-name">Database Systems</div>
+                    <div class="class-teacher">Dr. Martinez</div>
+                    <span class="class-status upcoming">⏳ Upcoming</span>
+                </div>
+
+                <div class="quick-actions">
+                    <a href="{% url 'mark_attendance' %}" class="action-btn">📸 Mark Attendance</a>
+                    <a href="{% url 'student_attendance' %}" class="action-btn secondary">📋 View Records</a>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Recent Activity</h2>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon success">✓</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Attendance Marked</div>
+                        <div class="activity-time">Data Structures - 2 hours ago</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon success">✓</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Attendance Marked</div>
+                        <div class="activity-time">Advanced Mathematics - 4 hours ago</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon warning">!</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Low Attendance Alert</div>
+                        <div class="activity-time">Physics - Below 75% - Yesterday</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon success">✓</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Attendance Marked</div>
+                        <div class="activity-time">English Literature - 2 days ago</div>
+                    </div>
+                </div>
+
+                <div class="activity-item">
+                    <div class="activity-icon success">⭐</div>
+                    <div class="activity-content">
+                        <div class="activity-title">Achievement Unlocked</div>
+                        <div class="activity-time">10-Day Perfect Attendance - 3 days ago</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add smooth animations on load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate stat values counting up
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues.forEach(stat => {
+                const value = stat.textContent;
+                if (!value.includes('%')) {
+                    const finalValue = parseInt(value);
+                    let current = 0;
+                    const increment = finalValue / 30;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= finalValue) {
+                            stat.textContent = finalValue;
+                            clearInterval(timer);
+                        } else {
+                            stat.textContent = Math.floor(current);
+                        }
+                    }, 30);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

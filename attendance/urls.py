@@ -15,4 +15,8 @@ urlpatterns = [
     path('teacher/reports', reports, name='reports'),
 
     path('student/dashboard', student_dashboard, name='student_dashboard'),
+    path('student/attendance', student_attendance, name='student_attendance'),
+    path('student/schedule', student_class_schedule, name='class_schedule'),
+    path('student/attendance', student_mark_attendance, name='mark_attendance'),
+    path('student/profile', student_profile, name='student_profile'),
 ]

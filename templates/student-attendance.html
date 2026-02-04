@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Attendance - Smart Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --primary-dark: #7c3aed;
+            --secondary: #06b6d4;
+            --success: #22c55e;
+            --warning: #eab308;
+            --danger: #ef4444;
+            --bg-main: #f8fafc;
+            --bg-card: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+            --shadow: rgba(15, 23, 42, 0.08);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Header */
+        .page-header {
+            margin-bottom: 2.5rem;
+            animation: slideDown 0.5s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            color: var(--primary);
+            transform: translateX(-3px);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px var(--shadow);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            animation: fadeInUp 0.5s ease-out 0.1s backwards;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .filter-group label {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-group select,
+        .filter-group input {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            min-width: 200px;
+        }
+
+        .filter-group select:focus,
+        .filter-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Poppins', sans-serif;
+            font-size: 1rem;
+            margin-top: auto;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--bg-main);
+            color: var(--text-primary);
+            border: 2px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        /* Stats Overview */
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px var(--shadow);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+            animation: fadeInUp 0.5s ease-out backwards;
+        }
+
+        .stat-box:nth-child(1) { animation-delay: 0.2s; border-left-color: var(--success); }
+        .stat-box:nth-child(2) { animation-delay: 0.3s; border-left-color: var(--primary); }
+        .stat-box:nth-child(3) { animation-delay: 0.4s; border-left-color: var(--danger); }
+        .stat-box:nth-child(4) { animation-delay: 0.5s; border-left-color: var(--warning); }
+
+        .stat-box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 24px var(--shadow);
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .stat-change.negative {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        /* Attendance Chart */
+        .chart-container {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px var(--shadow);
+            margin-bottom: 2rem;
+            animation: fadeInUp 0.5s ease-out 0.6s backwards;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .chart-legend {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
+        }
+
+        .chart-bars {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+            height: 300px;
+            padding: 1rem 0;
+        }
+
+        .chart-bar {
+            flex: 1;
+            background: linear-gradient(to top, var(--primary), var(--secondary));
+            border-radius: 8px 8px 0 0;
+            position: relative;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            animation: growUp 0.6s ease-out backwards;
+        }
+
+        @keyframes growUp {
+            from {
+                height: 0 !important;
+            }
+        }
+
+        .chart-bar:hover {
+            opacity: 0.8;
+            transform: scaleX(1.05);
+        }
+
+        .chart-bar-label {
+            position: absolute;
+            bottom: -2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+            white-space: nowrap;
+        }
+
+        .chart-bar-value {
+            position: absolute;
+            top: -1.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Attendance Table */
+        .table-container {
+            background: var(--bg-card);
+            border-radius: 16px;
+            box-shadow: 0 1px 3px var(--shadow);
+            overflow: hidden;
+            animation: fadeInUp 0.5s ease-out 0.7s backwards;
+        }
+
+        .table-header {
+            padding: 1.5rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box input {
+            padding: 0.75rem 2.5rem 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-family: 'Poppins', sans-serif;
+            transition: all 0.3s ease;
+            width: 300px;
+        }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: var(--bg-main);
+        }
+
+        th {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            font-size: 0.875rem;
+            letter-spacing: 0.5px;
+        }
+
+        td {
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+
+        tbody tr {
+            transition: background 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-main);
+        }
+
+        .subject-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .teacher-name {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .status-badge.present {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .status-badge.absent {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .status-badge.late {
+            background: rgba(234, 179, 8, 0.1);
+            color: var(--warning);
+        }
+
+        .percentage {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .percentage.good {
+            color: var(--success);
+        }
+
+        .percentage.warning {
+            color: var(--warning);
+        }
+
+        .percentage.danger {
+            color: var(--danger);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .search-box input {
+                width: 200px;
+            }
+
+            .chart-bars {
+                height: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+            }
+
+            .filter-group select,
+            .filter-group input {
+                min-width: 100%;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            table {
+                min-width: 800px;
+            }
+
+            .search-box input {
+                width: 100%;
+            }
+
+            .chart-legend {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <div class="header-top">
+                <a href="student-dashboard.html" class="back-btn">← Back to Dashboard</a>
+            </div>
+            <h1>My Attendance Records</h1>
+            <p class="header-subtitle">Track your attendance history and statistics</p>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <div class="filter-group">
+                <label>Semester</label>
+                <select>
+                    <option>Fall 2024</option>
+                    <option>Spring 2024</option>
+                    <option>Winter 2023</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Subject</label>
+                <select>
+                    <option>All Subjects</option>
+                    <option>Mathematics</option>
+                    <option>Data Structures</option>
+                    <option>Web Development</option>
+                    <option>Database Systems</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Date Range</label>
+                <input type="date" value="2024-01-01">
+            </div>
+            <div class="filter-group">
+                <label>To</label>
+                <input type="date" value="2024-12-31">
+            </div>
+            <button class="btn btn-primary">Apply Filters</button>
+            <button class="btn btn-secondary">Export Report</button>
+        </div>
+
+        <!-- Stats Overview -->
+        <div class="stats-overview">
+            <div class="stat-box">
+                <div class="stat-label">Overall Attendance</div>
+                <div class="stat-value">94.5%</div>
+                <div class="stat-change positive">↑ 2.5% from last month</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Classes Attended</div>
+                <div class="stat-value">189</div>
+                <div class="stat-change positive">↑ 12 more than last month</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Total Absences</div>
+                <div class="stat-value">11</div>
+                <div class="stat-change negative">↑ 3 more than last month</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">Late Arrivals</div>
+                <div class="stat-value">5</div>
+                <div class="stat-change positive">↓ 2 less than last month</div>
+            </div>
+        </div>
+
+        <!-- Attendance Chart -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <h2 class="chart-title">Monthly Attendance Trend</h2>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--success);"></div>
+                        <span>Present</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--danger);"></div>
+                        <span>Absent</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--warning);"></div>
+                        <span>Late</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-bars">
+                <div class="chart-bar" style="height: 95%;">
+                    <div class="chart-bar-value">95%</div>
+                    <div class="chart-bar-label">Jan</div>
+                </div>
+                <div class="chart-bar" style="height: 92%;">
+                    <div class="chart-bar-value">92%</div>
+                    <div class="chart-bar-label">Feb</div>
+                </div>
+                <div class="chart-bar" style="height: 97%;">
+                    <div class="chart-bar-value">97%</div>
+                    <div class="chart-bar-label">Mar</div>
+                </div>
+                <div class="chart-bar" style="height: 88%;">
+                    <div class="chart-bar-value">88%</div>
+                    <div class="chart-bar-label">Apr</div>
+                </div>
+                <div class="chart-bar" style="height: 93%;">
+                    <div class="chart-bar-value">93%</div>
+                    <div class="chart-bar-label">May</div>
+                </div>
+                <div class="chart-bar" style="height: 96%;">
+                    <div class="chart-bar-value">96%</div>
+                    <div class="chart-bar-label">Jun</div>
+                </div>
+                <div class="chart-bar" style="height: 94%;">
+                    <div class="chart-bar-value">94%</div>
+                    <div class="chart-bar-label">Jul</div>
+                </div>
+                <div class="chart-bar" style="height: 91%;">
+                    <div class="chart-bar-value">91%</div>
+                    <div class="chart-bar-label">Aug</div>
+                </div>
+                <div class="chart-bar" style="height: 98%;">
+                    <div class="chart-bar-value">98%</div>
+                    <div class="chart-bar-label">Sep</div>
+                </div>
+                <div class="chart-bar" style="height: 95%;">
+                    <div class="chart-bar-value">95%</div>
+                    <div class="chart-bar-label">Oct</div>
+                </div>
+                <div class="chart-bar" style="height: 94%;">
+                    <div class="chart-bar-value">94%</div>
+                    <div class="chart-bar-label">Nov</div>
+                </div>
+                <div class="chart-bar" style="height: 97%;">
+                    <div class="chart-bar-value">97%</div>
+                    <div class="chart-bar-label">Dec</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2 class="table-title">Subject-wise Attendance</h2>
+                <div class="search-box">
+                    <input type="text" placeholder="Search subjects...">
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th>Teacher</th>
+                        <th>Total Classes</th>
+                        <th>Present</th>
+                        <th>Absent</th>
+                        <th>Late</th>
+                        <th>Attendance %</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <div class="subject-name">Advanced Mathematics</div>
+                            <div class="teacher-name">Prof. Johnson</div>
+                        </td>
+                        <td>Prof. Johnson</td>
+                        <td>42</td>
+                        <td>40</td>
+                        <td>2</td>
+                        <td>0</td>
+                        <td>
+                            <div class="percentage good">95.2%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 95.2%;"></div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge present">✓ Good</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="subject-name">Data Structures</div>
+                            <div class="teacher-name">Dr. Williams</div>
+                        </td>
+                        <td>Dr. Williams</td>
+                        <td>38</td>
+                        <td>37</td>
+                        <td>0</td>
+                        <td>1</td>
+                        <td>
+                            <div class="percentage good">97.4%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 97.4%;"></div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge present">✓ Excellent</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="subject-name">Web Development</div>
+                            <div class="teacher-name">Prof. Anderson</div>
+                        </td>
+                        <td>Prof. Anderson</td>
+                        <td>40</td>
+                        <td>36</td>
+                        <td>3</td>
+                        <td>1</td>
+                        <td>
+                            <div class="percentage good">90.0%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 90%;"></div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge present">✓ Good</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="subject-name">Database Systems</div>
+                            <div class="teacher-name">Dr. Martinez</div>
+                        </td>
+                        <td>Dr. Martinez</td>
+                        <td>35</td>
+                        <td>33</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>
+                            <div class="percentage good">94.3%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 94.3%;"></div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge present">✓ Good</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="subject-name">Physics</div>
+                            <div class="teacher-name">Dr. Thompson</div>
+                        </td>
+                        <td>Dr. Thompson</td>
+                        <td>30</td>
+                        <td>22</td>
+                        <td>6</td>
+                        <td>2</td>
+                        <td>
+                            <div class="percentage warning">73.3%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 73.3%; background: var(--warning);"></div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge late">⚠ Low</span></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="subject-name">English Literature</div>
+                            <div class="teacher-name">Prof. Davis</div>
+                        </td>
+                        <td>Prof. Davis</td>
+                        <td>36</td>
+                        <td>34</td>
+                        <td>1</td>
+                        <td>1</td>
+                        <td>
+                            <div class="percentage good">94.4%</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: 94.4%;"></div>
+                            </div>
+                        </td>
+                        <td><span class="status-badge present">✓ Good</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // Animate progress bars on load
+        document.addEventListener('DOMContentLoaded', function() {
+            const progressBars = document.querySelectorAll('.progress-fill');
+            progressBars.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 300);
+            });
+
+            // Chart bar animation delays
+            const chartBars = document.querySelectorAll('.chart-bar');
+            chartBars.forEach((bar, index) => {
+                bar.style.animationDelay = `${0.8 + (index * 0.05)}s`;
+            });
+        });
+    </script>
+</body>
+</html>

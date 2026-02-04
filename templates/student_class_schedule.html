@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Schedule - Smart Attendance</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --secondary: #3b82f6;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --bg-gradient-start: #0f766e;
+            --bg-gradient-end: #134e4a;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+
+        /* Animated background pattern */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(59, 130, 246, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            animation: backgroundPulse 15s ease-in-out infinite;
+        }
+
+        @keyframes backgroundPulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .container {
+            position: relative;
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+            z-index: 1;
+        }
+
+        /* Header */
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.6s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            opacity: 0.9;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+            transform: translateX(-5px);
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            margin-bottom: 0.5rem;
+        }
+
+        .header-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        /* Week Navigation */
+        .week-nav {
+            background: var(--card-bg);
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideUp 0.6s ease-out 0.2s backwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 12px;
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .week-info {
+            text-align: center;
+        }
+
+        .week-info h3 {
+            font-size: 1.3rem;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .week-info p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        /* View Toggle */
+        .view-toggle {
+            background: var(--card-bg);
+            padding: 0.5rem;
+            border-radius: 12px;
+            display: inline-flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            animation: slideUp 0.6s ease-out 0.3s backwards;
+        }
+
+        .toggle-btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 600;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Schedule Grid */
+        .schedule-grid {
+            display: grid;
+            gap: 1.5rem;
+            animation: fadeIn 0.6s ease-out 0.4s backwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .day-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .day-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .day-header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .day-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .day-date {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .classes-list {
+            padding: 1.5rem;
+        }
+
+        .class-item {
+            display: grid;
+            grid-template-columns: 120px 1fr auto;
+            gap: 1.5rem;
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            background: white;
+            border: 2px solid var(--border);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .class-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
+        }
+
+        .class-item:hover {
+            border-color: var(--primary);
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
+        }
+
+        .class-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .time-block {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .time-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .time-value {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary);
+            font-family: 'Fira Code', monospace;
+        }
+
+        .class-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .class-name {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .class-meta {
+            display: flex;
+            gap: 1.5rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .class-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge.upcoming {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--secondary);
+        }
+
+        .status-badge.ongoing {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--accent);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .status-badge.completed {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+        }
+
+        .attendance-status {
+            padding: 0.35rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .attendance-status.present {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--primary);
+        }
+
+        .attendance-status.absent {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+        }
+
+        .attendance-status.pending {
+            background: rgba(100, 116, 139, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .no-classes {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+
+        .no-classes-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Calendar View */
+        .calendar-container {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1rem;
+        }
+
+        .calendar-day-label {
+            text-align: center;
+            font-weight: 700;
+            color: var(--text-secondary);
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            border-color: var(--primary);
+            transform: scale(1.05);
+        }
+
+        .calendar-day.today {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .calendar-day.has-classes::after {
+            content: '';
+            position: absolute;
+            bottom: 0.5rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .calendar-day.today.has-classes::after {
+            background: white;
+        }
+
+        .day-number {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        .day-count {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            opacity: 0.8;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .class-item {
+                grid-template-columns: 100px 1fr;
+                gap: 1rem;
+            }
+
+            .class-actions {
+                grid-column: 1 / -1;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+
+            .week-nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .class-item {
+                grid-template-columns: 1fr;
+            }
+
+            .time-block {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+            }
+
+            .calendar-grid {
+                gap: 0.5rem;
+            }
+
+            .calendar-day-label,
+            .calendar-day {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <a href="student-dashboard.html" class="back-link">← Back to Dashboard</a>
+            <h1>📅 My Class Schedule</h1>
+            <p class="header-subtitle">Plan your week and stay organized</p>
+        </div>
+
+        <!-- Week Navigation -->
+        <div class="week-nav">
+            <button class="nav-btn">← Previous Week</button>
+            <div class="week-info">
+                <h3>Week of January 15 - 21, 2024</h3>
+                <p>Current Semester: Fall 2024</p>
+            </div>
+            <button class="nav-btn">Next Week →</button>
+        </div>
+
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button class="toggle-btn active">📋 List View</button>
+            <button class="toggle-btn">📆 Calendar View</button>
+        </div>
+
+        <!-- Schedule Grid -->
+        <div class="schedule-grid">
+            <!-- Monday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <div class="day-name">Monday</div>
+                    <div class="day-date">Jan 15, 2024</div>
+                </div>
+                <div class="classes-list">
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">08:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Advanced Mathematics</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Prof. Johnson</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Room 301</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge completed">✓ Completed</span>
+                            <span class="attendance-status present">Present</span>
+                        </div>
+                    </div>
+
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">10:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Data Structures</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Dr. Williams</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Lab 204</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge completed">✓ Completed</span>
+                            <span class="attendance-status present">Present</span>
+                        </div>
+                    </div>
+
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">14:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Web Development</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Prof. Anderson</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Lab 105</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge ongoing">🔴 Ongoing</span>
+                            <span class="attendance-status pending">Pending</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tuesday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <div class="day-name">Tuesday</div>
+                    <div class="day-date">Jan 16, 2024</div>
+                </div>
+                <div class="classes-list">
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">09:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Database Systems</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Dr. Martinez</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Room 402</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge upcoming">⏳ Upcoming</span>
+                            <span class="attendance-status pending">Not Started</span>
+                        </div>
+                    </div>
+
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">13:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Physics</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Dr. Thompson</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Physics Lab</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>120 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge upcoming">⏳ Upcoming</span>
+                            <span class="attendance-status pending">Not Started</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wednesday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <div class="day-name">Wednesday</div>
+                    <div class="day-date">Jan 17, 2024</div>
+                </div>
+                <div class="classes-list">
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">08:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Advanced Mathematics</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Prof. Johnson</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Room 301</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge upcoming">⏳ Upcoming</span>
+                            <span class="attendance-status pending">Not Started</span>
+                        </div>
+                    </div>
+
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">11:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">English Literature</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Prof. Davis</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Room 215</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge upcoming">⏳ Upcoming</span>
+                            <span class="attendance-status pending">Not Started</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Thursday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <div class="day-name">Thursday</div>
+                    <div class="day-date">Jan 18, 2024</div>
+                </div>
+                <div class="classes-list">
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">10:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Data Structures</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Dr. Williams</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Lab 204</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge upcoming">⏳ Upcoming</span>
+                            <span class="attendance-status pending">Not Started</span>
+                        </div>
+                    </div>
+
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">14:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Web Development</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Prof. Anderson</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Lab 105</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge upcoming">⏳ Upcoming</span>
+                            <span class="attendance-status pending">Not Started</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Friday -->
+            <div class="day-card">
+                <div class="day-header">
+                    <div class="day-name">Friday</div>
+                    <div class="day-date">Jan 19, 2024</div>
+                </div>
+                <div class="classes-list">
+                    <div class="class-item">
+                        <div class="time-block">
+                            <div class="time-label">Start</div>
+                            <div class="time-value">09:00</div>
+                        </div>
+                        <div class="class-details">
+                            <div class="class-name">Database Systems</div>
+                            <div class="class-meta">
+                                <div class="meta-item">
+                                    <span>👨‍🏫</span>
+                                    <span>Dr. Martinez</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>📍</span>
+                                    <span>Room 402</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>⏱️</span>
+                                    <span>90 min</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="class-actions">
+                            <span class="status-badge upcoming">⏳ Upcoming</span>
+                            <span class="attendance-status pending">Not Started</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekend -->
+            <div class="day-card">
+                <div class="day-header">
+                    <div class="day-name">Saturday</div>
+                    <div class="day-date">Jan 20, 2024</div>
+                </div>
+                <div class="classes-list">
+                    <div class="no-classes">
+                        <div class="no-classes-icon">🎉</div>
+                        <p>No classes scheduled</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="day-card">
+                <div class="day-header">
+                    <div class="day-name">Sunday</div>
+                    <div class="day-date">Jan 21, 2024</div>
+                </div>
+                <div class="classes-list">
+                    <div class="no-classes">
+                        <div class="no-classes-icon">😴</div>
+                        <p>No classes scheduled</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
