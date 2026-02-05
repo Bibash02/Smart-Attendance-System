@@ -168,10 +168,18 @@
             </nav>
 
             <div class="user-profile">
-                <div class="user-avatar">JD</div>
+                <div class="user-avatar">
+                    {% if profile.profile_image %}
+                        <img src="{{ profile.profile_image.url }}" class="avatar-img">
+                    {% else %}
+                        <div class="user-avatar">
+                            {{ teacher.first_name|slice:":1" }}{{ teacher.last_name|slice:":1" }}
+                        </div>
+                    {% endif %}
+                </div>
                 <div class="user-info">
-                    <h4>John Doe</h4>
-                    <p>Mathematics Teacher</p>
+                    <h4>{{ teacher.get_full_name }}</h4>
+                    <p>{{ profile.role|title }}</p>
                 </div>
             </div>
         </aside>
@@ -202,114 +210,95 @@
             </div>
 
             <div class="groups-grid">
-                <!-- Group Card 1 -->
-                <div class="group-card">
-                    <div class="group-header">
-                        <div class="group-icon">📐</div>
-                        <span class="status-badge active">Active</span>
+
+            {% for item in group_data %}
+            <div class="group-card">
+
+                <!-- Header -->
+                <div class="group-header">
+                    <div class="group-icon">
+                        {{ item.group.subject.name|slice:":1" }}
                     </div>
-                    <h3 class="group-title">Mathematics - Grade 10A</h3>
-                    <div class="group-meta">
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            32 Students
-                        </span>
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            9:00 - 10:30 AM
-                        </span>
+                    <span class="status-badge {% if item.group.is_active %}active{% else %}inactive{% endif %}">
+                        {% if item.group.is_active %}Active{% else %}Inactive{% endif %}
+                    </span>
+                </div>
+
+                <!-- Title -->
+                <h3 class="group-title">
+                    {{ item.group.subject.name }} – {{ item.group.grade.name }}
+                </h3>
+
+                <!-- Meta -->
+                <div class="group-meta">
+                    <span class="meta-item">
+                        👥 {{ item.students_count }} Students
+                    </span>
+
+                    {% if item.group.semester %}
+                    <span class="meta-item">
+                        📘 Semester {{ item.group.semester }}
+                    </span>
+                    {% endif %}
+                </div>
+
+                <!-- Stats -->
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <div class="stat-value"
+                            style="color: {% if item.percentage >= 90 %}var(--success)
+                                        {% elif item.percentage >= 75 %}var(--warning)
+                                        {% else %}var(--danger){% endif %}">
+                            {{ item.percentage }}%
+                        </div>
+                        <div class="stat-label">Attendance</div>
                     </div>
 
-                    <div class="stats-row">
-                        <div class="stat-item">
-                            <div class="stat-value" style="color: var(--success)">94%</div>
-                            <div class="stat-label">Attendance</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">28</div>
-                            <div class="stat-label">Present</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">4</div>
-                            <div class="stat-label">Absent</div>
-                        </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ item.present }}</div>
+                        <div class="stat-label">Present</div>
                     </div>
 
-                    <div class="card-actions">
-                        <a href="mark-attendance.html" class="btn btn-primary">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                            </svg>
-                            Mark Attendance
-                        </a>
-                        <a href="group-details.html" class="btn btn-outline">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            View Details
-                        </a>
+                    <div class="stat-item">
+                        <div class="stat-value">{{ item.absent }}</div>
+                        <div class="stat-label">Absent</div>
                     </div>
                 </div>
 
-                <!-- Group Card 2 -->
-                <div class="group-card">
-                    <div class="group-header">
-                        <div class="group-icon">∫</div>
-                        <span class="status-badge active">Active</span>
-                    </div>
-                    <h3 class="group-title">Advanced Calculus - Grade 12</h3>
-                    <div class="group-meta">
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
-                            </svg>
-                            28 Students
-                        </span>
-                        <span class="meta-item">
-                            <svg fill="none" stroke="currentColor" width="16" height="16" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                            </svg>
-                            11:00 AM - 12:30 PM
-                        </span>
-                    </div>
+                <!-- Actions -->
+                <div class="card-actions">
+                    <a href="" class="btn btn-primary">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7
+                                    a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2
+                                    M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                        Mark Attendance
+                    </a>
 
-                    <div class="stats-row">
-                        <div class="stat-item">
-                            <div class="stat-value" style="color: var(--warning)">89%</div>
-                            <div class="stat-label">Attendance</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">25</div>
-                            <div class="stat-label">Present</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">3</div>
-                            <div class="stat-label">Absent</div>
-                        </div>
-                    </div>
-
-                    <div class="card-actions">
-                        <a href="mark-attendance.html" class="btn btn-primary">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                            </svg>
-                            Mark Attendance
-                        </a>
-                        <a href="group-details.html" class="btn btn-outline">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                            </svg>
-                            View Details
-                        </a>
-                    </div>
+                    <a href="" class="btn btn-outline">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5
+                                    c4.478 0 8.268 2.943 9.542 7
+                                    -1.274 4.057-5.064 7-9.542 7
+                                    -4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        View Details
+                    </a>
                 </div>
+
             </div>
+            {% empty %}
+            <div class="no-groups">
+                <p>No groups assigned yet.</p>
+            </div>
+            {% endfor %}
+
+        </div>
         </main>
     </div>
 </body>

@@ -47,3 +47,7 @@ class QRCodeAdmin(admin.ModelAdmin):
     list_display = ['id', 'session', 'code', 'is_active']
     list_filter = ['session', 'code']
     search_fields = ['is_active']
+
+@admin.register(Subject)
+class SubjectAdmin(admin.ModelAdmin):
+    list_display = ['id', 'name', 'code']

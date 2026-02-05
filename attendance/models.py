@@ -31,12 +31,19 @@ class Grade(models.Model):
     def __str__(self):
         return self.name
 
+class Subject(models.Model):
+    name = models.CharField(max_length=100)
+    code = models.CharField(max_length=20, unique=True)
+
+    def __str__(self):
+        return self.name
+
 class ClassGroup(models.Model):
     name = models.CharField(max_length=100)
-    subject = models.CharField(max_length=100)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE)
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
-    semester = models.CharField(max_length=20)
+    semester = models.CharField(max_length=20, blank=True, default='None')
     created_at = models.DateTimeField(auto_now_add=True)    
     is_active = models.BooleanField(default=True)
 
@@ -45,6 +52,7 @@ class ClassGroup(models.Model):
 
 class StudentProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+    grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
     student_id = models.CharField(max_length=20, unique=True)
     class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
     roll_no = models.CharField(max_length=10)
@@ -63,13 +71,16 @@ class StudentEnrollment(models.Model):
 
 
 class AttendanceSession(models.Model):
-    class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
+    class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE, related_name='sessions')
     date = models.DateField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         unique_together = ('class_group', 'date')
+    
+    def __str__(self):
+        return f"{self.class_group} - {self.date}"
 
 class AttendanceRecord(models.Model):
     STATUS_CHOICES = [
@@ -77,7 +88,7 @@ class AttendanceRecord(models.Model):
         ('ABSENT', 'Absent'),
         ('LATE', 'Late')
     ]
-    session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE)
+    session = models.ForeignKey(AttendanceSession, on_delete=models.CASCADE, related_name='records')
     student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES)
 

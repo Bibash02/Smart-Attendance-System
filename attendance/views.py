@@ -12,6 +12,7 @@ from django.contrib.auth import login, authenticate, logout
 from .utils import redirect_user_by_role
 from django.views.decorators.csrf import csrf_exempt
 import json
+from datetime import date
 
 # Create your views here.
 def auth(request):
@@ -161,39 +162,82 @@ def create_attendace_session(request, class_id):
     return redirect('mark_attendace', session.id)
 
 def teacher_mark_attendance(request, session_id):
-    session = get_object_or_404(
-        AttendanceSession, id = session_id, created_by = request.user
-    )
+    teacher = request.user
 
-    students = StudentEnrollment.objects.filter(
-        class_group = session.class_group
-    )
+    groups = ClassGroup.objects.filter(
+        teacher=teacher,
+        is_active=True
+    ).select_related('subject', 'grade')
 
-    if request.method == 'POST':
-        for enrollment in students:
-            status = request.post.get(str(enrollment.student.id))
-            AttendanceRecord.objects.update_or_create(
-                session = session,
-                student = enrollment.student,
-                defaults={'status': status}
-            )
-        return redirect('teacher_dashboard')
-    return render(request, 'teacher_mark_attendance.html', {
-        'session': session,
-        'students': students
-    })
+    selected_group = None
+    students = []
+
+    group_id = request.GET.get('group')
+
+    if group_id:
+        selected_group = get_object_or_404(
+            ClassGroup,
+            id=group_id,
+            teacher=teacher
+        )
+
+        students = StudentProfile.objects.filter(
+            grade=selected_group.grade
+        ).select_related('user')
+
+    context = {
+        'groups': groups,
+        'selected_group': selected_group,
+        'students': students,
+        'today': date.today(),
+    }
+
+    return render(request, 'teacher_mark_attendance.html', context)
 
 
 def teacher_groups(request):
+    user = request.user
+    profile = user.userprofile
     grades = Grade.objects.filter(is_active = True)
 
     groups = ClassGroup.objects.filter(
         teacher = request.user,
         is_active = True
-    )
+    ).select_related('grade')
+
+    group_data = []
+
+    for group in groups:
+        students_count = StudentProfile.objects.filter(
+            grade = group.grade
+        ).count()
+
+        session = group.sessions.last()
+
+        present = absent = 0
+        percentage = 0
+
+        if session:
+            present = session.records.filter(status='PRESENT').count()
+            absent = session.records.filter(status='ABSENT').count()
+            total = present + absent
+            if total > 0:
+                percentage = round((present / total) * 100, 1)
+        
+        group_data.append({
+            'group': group,
+            'students_count': students_count,
+            'present': present,
+            'absent': absent,
+            'percentage': percentage
+        })
+
     return render(request, 'teacher_groups.html', {
         'grades': grades,
-        'groups': groups
+        'groups': groups,
+        'group_data': group_data,
+        'teacher': user,
+        'profile': profile
     })
 
 def teacher_qr_attendance(request):
