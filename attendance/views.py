@@ -160,7 +160,7 @@ def create_attendace_session(request, class_id):
 
     return redirect('mark_attendace', session.id)
 
-def mark_attendance(request, session_id):
+def teacher_mark_attendance(request, session_id):
     session = get_object_or_404(
         AttendanceSession, id = session_id, created_by = request.user
     )
@@ -178,7 +178,7 @@ def mark_attendance(request, session_id):
                 defaults={'status': status}
             )
         return redirect('teacher_dashboard')
-    return render(request, 'mark_attendance.html', {
+    return render(request, 'teacher_mark_attendance.html', {
         'session': session,
         'students': students
     })
@@ -191,16 +191,16 @@ def teacher_groups(request):
         teacher = request.user,
         is_active = True
     )
-    return render(request, 'groups.html', {
+    return render(request, 'teacher_groups.html', {
         'grades': grades,
         'groups': groups
     })
 
-def qr_attendance(request):
-    return render(request, 'qr-attendance.html')
+def teacher_qr_attendance(request):
+    return render(request, 'teacher_qr-attendance.html')
 
-def reports(request):
-    return render(request, 'reports.html')
+def teacher_reports(request):
+    return render(request, 'teacher_reports.html')
 
 def student_dashboard(request):
     user = request.user

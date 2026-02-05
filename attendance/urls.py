@@ -9,10 +9,10 @@ urlpatterns = [
     path('forgot-password', forgot_password, name='forgot_password'),
 
     path('teacher/dashboard', teacher_dashboard, name='teacher_dashboard'),
-    path('teacher/mark', mark_attendance, name='mark_attendance'),
+    path('teacher/mark', teacher_mark_attendance, name='teacher_mark_attendance'),
     path('teacher/groups', teacher_groups, name='teacher_groups'),
-    path('teacher/attendance', qr_attendance, name='qr-attendance'),
-    path('teacher/reports', reports, name='reports'),
+    path('teacher/attendance', teacher_qr_attendance, name='teacher_qr-attendance'),
+    path('teacher/reports', teacher_reports, name='teacher_reports'),
 
     path('student/dashboard', student_dashboard, name='student_dashboard'),
     path('student/attendance', student_attendance, name='student_attendance'),
