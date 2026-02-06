@@ -1,0 +1,520 @@
+{% load attendance_extras %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mark Attendance - {{ group.name }}</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+        }
+
+        .header h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .header-info {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .controls {
+            padding: 20px 24px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .control-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .month-selector {
+            padding: 8px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .btn-add-student {
+            margin-left: auto;
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-add-student:hover {
+            background: #218838;
+        }
+
+        .attendance-sheet {
+            padding: 24px;
+            overflow-x: auto;
+        }
+
+        .sheet-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .sheet-table thead {
+            background: #f8f9fa;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .sheet-table th {
+            padding: 12px 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 13px;
+            color: #495057;
+            border: 1px solid #dee2e6;
+            white-space: nowrap;
+        }
+
+        .sheet-table th.student-col {
+            text-align: left;
+            min-width: 200px;
+            position: sticky;
+            left: 0;
+            background: #f8f9fa;
+            z-index: 11;
+        }
+
+        .sheet-table td {
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            text-align: center;
+        }
+
+        .sheet-table td.student-cell {
+            text-align: left;
+            position: sticky;
+            left: 0;
+            background: white;
+            z-index: 5;
+            font-weight: 500;
+        }
+
+        .student-name {
+            font-size: 14px;
+            color: #212529;
+        }
+
+        .student-id {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 2px;
+        }
+
+        .date-header {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .date-day {
+            font-size: 16px;
+            font-weight: 700;
+            color: #212529;
+        }
+
+        .date-weekday {
+            font-size: 11px;
+            color: #6c757d;
+            text-transform: uppercase;
+        }
+
+        .status-cell {
+            position: relative;
+        }
+
+        .status-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+
+        .status-btn.present {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #28a745;
+        }
+
+        .status-btn.absent {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #dc3545;
+        }
+
+        .status-btn.late {
+            background: #fff3cd;
+            border-color: #ffc107;
+            color: #856404;
+        }
+
+        .status-btn.holiday {
+            background: #e2e3e5;
+            border-color: #6c757d;
+            color: #6c757d;
+        }
+
+        .footer {
+            padding: 20px 24px;
+            background: #f8f9fa;
+            border-top: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .legend {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+
+        .btn-submit {
+            padding: 10px 24px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-submit:hover {
+            background: #5568d3;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            color: #495057;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ced4da;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn-cancel {
+            padding: 8px 16px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .btn-save {
+            padding: 8px 16px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <form method="post" id="attendanceForm">
+        {% csrf_token %}
+        
+        <div class="container">
+            <!-- HEADER -->
+            <div class="header">
+                <h2>{{ group.subject.name }} - {{ group.name }}</h2>
+                <div class="header-info">
+                    {{ group.grade.name }} | Academic Year 2024-2025
+                </div>
+            </div>
+
+            <!-- CONTROLS -->
+            <div class="controls">
+                <div class="control-group">
+                    <label for="monthSelect">Month:</label>
+                    <input type="month" 
+                           id="monthSelect" 
+                           name="month"
+                           class="month-selector"
+                           value="{{ selected_month }}"
+                           onchange="this.form.submit()">
+                </div>
+
+                <button type="button" class="btn-add-student" onclick="openAddStudentModal()">
+                    + Add Student
+                </button>
+            </div>
+
+            <!-- ATTENDANCE SHEET -->
+            <div class="attendance-sheet">
+                <table class="sheet-table">
+                    <thead>
+                        <tr>
+                            <th class="student-col">Student</th>
+                            {% for date in dates %}
+                            <th>
+                                <div class="date-header">
+                                    <span class="date-day">{{ date.day }}</span>
+                                    <span class="date-weekday">{{ date|date:"D" }}</span>
+                                </div>
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td class="student-cell">
+                                <div class="student-name">{{ student.user.get_full_name }}</div>
+                                <div class="student-id">ID: {{ student.student_id }}</div>
+                            </td>
+                            {% for date in dates %}
+                            <td class="status-cell">
+                                {% get_attendance records student.id date as status %}
+                                {% get_status_icon records student.id date as icon %}
+
+                                <input type="hidden"
+                                    name="attendance_{{ student.id }}_{{ date|date:'Y-m-d' }}"
+                                    id="status_{{ student.id }}_{{ date|date:'Y-m-d' }}"
+                                    value="{{ status }}">
+
+                                <button type="button"
+                                        class="status-btn {{ status|lower }}"
+                                        onclick="toggleStatus({{ student.id }}, '{{ date|date:'Y-m-d' }}', this)">
+                                    {{ icon }}
+                                </button>
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- FOOTER -->
+            <div class="footer">
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-icon" style="background: #d4edda; border: 2px solid #28a745;"></span>
+                        <span>Present (✓)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-icon" style="background: #f8d7da; border: 2px solid #dc3545;"></span>
+                        <span>Absent (✗)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-icon" style="background: #fff3cd; border: 2px solid #ffc107;"></span>
+                        <span>Late (L)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-icon" style="background: #e2e3e5; border: 2px solid #6c757d;"></span>
+                        <span>Holiday (H)</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    💾 Save Attendance
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- ADD STUDENT MODAL -->
+    <div class="modal" id="addStudentModal">
+        <div class="modal-content">
+            <div class="modal-header">Add New Student</div>
+            <form id="addStudentForm">
+                <div class="form-group">
+                    <label for="studentName">Full Name</label>
+                    <input type="text" id="studentName" name="student_name" required>
+                </div>
+                <div class="form-group">
+                    <label for="studentId">Student ID</label>
+                    <input type="text" id="studentId" name="student_id" required>
+                </div>
+                <div class="form-group">
+                    <label for="studentEmail">Email</label>
+                    <input type="email" id="studentEmail" name="student_email">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel" onclick="closeAddStudentModal()">Cancel</button>
+                    <button type="submit" class="btn-save">Add Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const statusCycle = ['PRESENT', 'ABSENT', 'LATE', 'HOLIDAY'];
+        const statusIcons = {
+            'PRESENT': '✓',
+            'ABSENT': '✗',
+            'LATE': 'L',
+            'HOLIDAY': 'H'
+        };
+
+        function toggleStatus(studentId, date, button) {
+            const input = document.getElementById(`status_${studentId}_${date}`);
+            const currentStatus = input.value;
+            const currentIndex = statusCycle.indexOf(currentStatus);
+            const nextIndex = (currentIndex + 1) % statusCycle.length;
+            const nextStatus = statusCycle[nextIndex];
+            
+            // Update hidden input
+            input.value = nextStatus;
+            
+            // Update button appearance
+            button.className = 'status-btn ' + nextStatus.toLowerCase();
+            button.textContent = statusIcons[nextStatus];
+        }
+
+        function openAddStudentModal() {
+            document.getElementById('addStudentModal').classList.add('active');
+        }
+
+        function closeAddStudentModal() {
+            document.getElementById('addStudentModal').classList.remove('active');
+        }
+
+        document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add your AJAX call here to add student
+            alert('Student add functionality - implement with AJAX');
+            closeAddStudentModal();
+        });
+
+        // Close modal when clicking outside
+        document.getElementById('addStudentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeAddStudentModal();
+            }
+        });
+    </script>
+</body>
+</html>

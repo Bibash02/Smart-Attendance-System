@@ -12,7 +12,10 @@ from django.contrib.auth import login, authenticate, logout
 from .utils import redirect_user_by_role
 from django.views.decorators.csrf import csrf_exempt
 import json
-from datetime import date
+from datetime import date, datetime, timedelta
+from calendar import monthrange
+from django.db import transaction
+
 
 # Create your views here.
 def auth(request):
@@ -194,6 +197,339 @@ def teacher_mark_attendance(request, session_id):
 
     return render(request, 'teacher_mark_attendance.html', context)
 
+# def mark_attendance(request, group_id):
+#     group = get_object_or_404(
+#         ClassGroup,
+#         id=group_id,
+#         teacher=request.user
+#     )
+
+#     selected_date = request.GET.get('date') or date.today()
+
+#     students = StudentProfile.objects.filter(
+#         grade=group.grade
+#     ).select_related('user')
+
+#     session, created = AttendanceSession.objects.get_or_create(
+#         class_group=group,
+#         date=selected_date,
+#         defaults={'created_by': request.user}
+#     )
+
+#     if request.method == 'POST':
+#         for student in students:
+#             status = request.POST.get(f'status_{student.id}', 'PRESENT')
+
+#             AttendanceRecord.objects.update_or_create(
+#                 session=session,
+#                 student=student,
+#                 defaults={'status': status}
+#             )
+
+#         return redirect('mark_attendance', group_id=group.id)
+
+#     existing_records = {
+#         r.student_id: r.status
+#         for r in session.records.all()
+#     }
+
+#     return render(request, 'mark_attendance.html', {
+#         'group': group,
+#         'students': students,
+#         'session': session,
+#         'records': existing_records,
+#         'selected_date': selected_date,
+#     })
+
+def mark_attendance(request, group_id):
+    group = get_object_or_404(ClassGroup, id=group_id)
+    
+    # Get selected month or default to current month
+    selected_month = request.GET.get('month') or request.POST.get('month')
+    if selected_month:
+        try:
+            year, month = map(int, selected_month.split('-'))
+        except:
+            year, month = datetime.now().year, datetime.now().month
+    else:
+        year, month = datetime.now().year, datetime.now().month
+    
+    # Handle form submission
+    if request.method == 'POST':
+        return save_attendance(request, group, year, month)
+    
+    # Get all students in this class group
+    students = StudentProfile.objects.filter(
+        class_group=group,
+        is_active=True
+    ).select_related('user', 'grade').order_by('roll_no')
+    
+    # Generate all dates for the selected month
+    num_days = monthrange(year, month)[1]
+    dates = [datetime(year, month, day).date() for day in range(1, num_days + 1)]
+    
+    # Get existing attendance sessions and records for this month
+    start_date = datetime(year, month, 1).date()
+    end_date = datetime(year, month, num_days).date()
+    
+    sessions = AttendanceSession.objects.filter(
+        class_group=group,
+        date__range=[start_date, end_date]
+    ).prefetch_related('records')
+    
+    # Create a dictionary for easy lookup: {student_id: {date: status}}
+    records = {}
+    for session in sessions:
+        for record in session.records.all():
+            if record.student.id not in records:
+                records[record.student.id] = {}
+            records[record.student.id][session.date.strftime('%Y-%m-%d')] = record.status
+    
+    context = {
+        'group': group,
+        'students': students,
+        'dates': dates,
+        'records': records,
+        'selected_month': f"{year}-{month:02d}",
+    }
+    
+    return render(request, 'mark_attendance.html', context)
+
+def save_attendance(request, group, year, month):
+    """Save attendance records from the form submission"""
+    try:
+        saved_count = 0
+        updated_count = 0
+        
+        # Dictionary to group records by date
+        date_records = {}
+        
+        # Get all POST data and organize by date
+        for key, value in request.POST.items():
+            if key.startswith('attendance_'):
+                # Parse the key: attendance_{student_id}_{date}
+                parts = key.split('_')
+                if len(parts) == 3:
+                    student_id = parts[1]
+                    date_str = parts[2]
+                    status = value
+                    
+                    if date_str not in date_records:
+                        date_records[date_str] = []
+                    
+                    date_records[date_str].append({
+                        'student_id': student_id,
+                        'status': status
+                    })
+        
+        # Process each date
+        for date_str, student_data in date_records.items():
+            try:
+                attendance_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+                
+                # Get or create attendance session for this date
+                session, session_created = AttendanceSession.objects.get_or_create(
+                    class_group=group,
+                    date=attendance_date,
+                    defaults={
+                        'marked_by': request.user
+                    }
+                )
+                
+                # Update or create records for each student
+                for data in student_data:
+                    try:
+                        student = StudentProfile.objects.get(id=data['student_id'])
+                        
+                        record, created = AttendanceRecord.objects.update_or_create(
+                            session=session,
+                            student=student,
+                            defaults={
+                                'status': data['status']
+                            }
+                        )
+                        
+                        if created:
+                            saved_count += 1
+                        else:
+                            updated_count += 1
+                            
+                    except StudentProfile.DoesNotExist:
+                        continue
+                
+            except ValueError:
+                continue
+        
+        messages.success(
+            request, 
+            f'Successfully saved attendance! New: {saved_count}, Updated: {updated_count}'
+        )
+        
+    except Exception as e:
+        messages.error(request, f'Error saving attendance: {str(e)}')
+    
+    # Redirect back to the same page with the same month
+    return redirect(f'/attendance/mark/{group.id}/?month={year}-{month:02d}')
+
+@login_required
+def add_student_to_group(request, group_id):
+    """AJAX endpoint to add a new student to a group"""
+    if request.method == 'POST':
+        try:
+            group = get_object_or_404(ClassGroup, id=group_id)
+            
+            # Get form data
+            student_name = request.POST.get('student_name')
+            student_id = request.POST.get('student_id')
+            student_email = request.POST.get('student_email', '')
+            roll_no = request.POST.get('roll_no', '')
+            
+            # Check if student_id already exists
+            if StudentProfile.objects.filter(student_id=student_id).exists():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Student ID already exists!'
+                }, status=400)
+            
+            # Split name into first and last name
+            name_parts = student_name.strip().split(' ', 1)
+            first_name = name_parts[0]
+            last_name = name_parts[1] if len(name_parts) > 1 else ''
+            
+            # Create username from student_id
+            username = student_id
+            
+            # Check if username exists
+            if User.objects.filter(username=username).exists():
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Username already exists!'
+                }, status=400)
+            
+            # Create user
+            user = User.objects.create_user(
+                username=username,
+                first_name=first_name,
+                last_name=last_name,
+                email=student_email,
+                password=student_id  # Default password is student_id
+            )
+            
+            # Create student profile
+            student = StudentProfile.objects.create(
+                user=user,
+                student_id=student_id,
+                class_group=group,
+                grade=group.grade,
+                roll_no=roll_no if roll_no else str(StudentProfile.objects.filter(class_group=group).count() + 1)
+            )
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Student added successfully!',
+                'student': {
+                    'id': student.id,
+                    'name': student.user.get_full_name(),
+                    'student_id': student.student_id,
+                    'roll_no': student.roll_no
+                }
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': str(e)
+            }, status=400)
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'}, status=400)
+
+@login_required
+def attendance_report(request, group_id):
+    """Generate attendance report for a group"""
+    group = get_object_or_404(ClassGroup, id=group_id)
+    
+    # Get date range
+    selected_month = request.GET.get('month')
+    if selected_month:
+        year, month = map(int, selected_month.split('-'))
+    else:
+        year, month = datetime.now().year, datetime.now().month
+    
+    num_days = monthrange(year, month)[1]
+    start_date = datetime(year, month, 1).date()
+    end_date = datetime(year, month, num_days).date()
+    
+    students = StudentProfile.objects.filter(
+        class_group=group,
+        is_active=True
+    ).select_related('user', 'grade').order_by('roll_no')
+    
+    # Get all sessions for this month
+    sessions = AttendanceSession.objects.filter(
+        class_group=group,
+        date__range=[start_date, end_date]
+    ).prefetch_related('records')
+    
+    # Calculate statistics for each student
+    student_stats = []
+    for student in students:
+        present_count = 0
+        absent_count = 0
+        late_count = 0
+        total_sessions = 0
+        
+        for session in sessions:
+            total_sessions += 1
+            try:
+                record = session.records.get(student=student)
+                if record.status == 'PRESENT':
+                    present_count += 1
+                elif record.status == 'ABSENT':
+                    absent_count += 1
+                elif record.status == 'LATE':
+                    late_count += 1
+            except AttendanceRecord.DoesNotExist:
+                # No record means absent
+                absent_count += 1
+        
+        # Calculate attendance percentage
+        attendance_percentage = (present_count / total_sessions * 100) if total_sessions > 0 else 0
+        
+        student_stats.append({
+            'student': student,
+            'total_sessions': total_sessions,
+            'present': present_count,
+            'absent': absent_count,
+            'late': late_count,
+            'percentage': round(attendance_percentage, 2)
+        })
+    
+    context = {
+        'group': group,
+        'student_stats': student_stats,
+        'selected_month': f"{year}-{month:02d}",
+        'month_name': datetime(year, month, 1).strftime('%B %Y'),
+        'total_sessions': sessions.count()
+    }
+    
+    return render(request, 'attendance/report.html', context)
+
+@login_required
+def group_list(request):
+    """List all class groups for the teacher"""
+    if request.user.is_staff or request.user.is_superuser:
+        groups = ClassGroup.objects.filter(is_active=True).select_related('subject', 'grade', 'teacher')
+    else:
+        groups = ClassGroup.objects.filter(
+            teacher=request.user,
+            is_active=True
+        ).select_related('subject', 'grade')
+    
+    context = {
+        'groups': groups
+    }
+    
+    return render(request, 'attendance/group_list.html', context)
 
 def teacher_groups(request):
     user = request.user
@@ -203,7 +539,7 @@ def teacher_groups(request):
     groups = ClassGroup.objects.filter(
         teacher = request.user,
         is_active = True
-    ).select_related('grade')
+    ).select_related('subject', 'grade')
 
     group_data = []
 

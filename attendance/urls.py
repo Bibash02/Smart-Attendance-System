@@ -14,6 +14,11 @@ urlpatterns = [
     path('teacher/attendance', teacher_qr_attendance, name='teacher_qr-attendance'),
     path('teacher/reports', teacher_reports, name='teacher_reports'),
 
+    path('teacher/mark-attendance/<int:group_id>/', mark_attendance, name='mark_attendance'),
+    path('teacher/group/list', group_list, name='group_list'),
+    path('teacher/add-student/<int:group_id>/', add_student_to_group, name='add_student'),
+    path('teacher/report/<int:group_id>/', attendance_report, name='report'),
+
     path('student/dashboard', student_dashboard, name='student_dashboard'),
     path('student/attendance', student_attendance, name='student_attendance'),
     path('student/schedule', student_class_schedule, name='class_schedule'),
