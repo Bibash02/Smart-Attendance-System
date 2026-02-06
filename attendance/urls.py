@@ -16,7 +16,7 @@ urlpatterns = [
 
     path('teacher/mark-attendance/<int:group_id>/', mark_attendance, name='mark_attendance'),
     path('teacher/group/list', group_list, name='group_list'),
-    path('teacher/add-student/<int:group_id>/', add_student_to_group, name='add_student'),
+    path('teacher/add-student/<int:group_id>/', add_student_to_group, name='add_student_to_group'),
     path('teacher/report/<int:group_id>/', attendance_report, name='report'),
 
     path('student/dashboard', student_dashboard, name='student_dashboard'),

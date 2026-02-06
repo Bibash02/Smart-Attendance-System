@@ -55,7 +55,7 @@ class StudentProfile(models.Model):
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
     student_id = models.CharField(max_length=20, unique=True)
     class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
-    roll_no = models.CharField(max_length=10)
+    roll_no = models.PositiveIntegerField()
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

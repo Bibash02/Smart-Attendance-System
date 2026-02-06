@@ -387,7 +387,7 @@
                             {% endfor %}
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="studentTableBody">
                         {% for student in students %}
                         <tr>
                             <td class="student-cell">
@@ -471,6 +471,8 @@
     </div>
 
     <script>
+    document.addEventListener('DOMContentLoaded', function () {
+
         const statusCycle = ['PRESENT', 'ABSENT', 'LATE', 'HOLIDAY'];
         const statusIcons = {
             'PRESENT': '✓',
@@ -479,42 +481,50 @@
             'HOLIDAY': 'H'
         };
 
-        function toggleStatus(studentId, date, button) {
+        window.toggleStatus = function (studentId, date, button) {
             const input = document.getElementById(`status_${studentId}_${date}`);
             const currentStatus = input.value;
             const currentIndex = statusCycle.indexOf(currentStatus);
-            const nextIndex = (currentIndex + 1) % statusCycle.length;
-            const nextStatus = statusCycle[nextIndex];
-            
-            // Update hidden input
+            const nextStatus = statusCycle[(currentIndex + 1) % statusCycle.length];
+
             input.value = nextStatus;
-            
-            // Update button appearance
             button.className = 'status-btn ' + nextStatus.toLowerCase();
             button.textContent = statusIcons[nextStatus];
-        }
+        };
 
-        function openAddStudentModal() {
+        window.openAddStudentModal = function () {
             document.getElementById('addStudentModal').classList.add('active');
-        }
+        };
 
-        function closeAddStudentModal() {
+        window.closeAddStudentModal = function () {
             document.getElementById('addStudentModal').classList.remove('active');
-        }
+        };
 
-        document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+        document.getElementById('addStudentForm').addEventListener('submit', function (e) {
             e.preventDefault();
-            // Add your AJAX call here to add student
-            alert('Student add functionality - implement with AJAX');
-            closeAddStudentModal();
+
+            const formData = new FormData(this);
+
+            fetch('/attendance/add-student/{{ group.id }}/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    alert(data.message || 'Failed to add student');
+                    return;
+                }
+
+                location.reload(); // safest + simplest
+            })
+            .catch(() => alert('Server error'));
         });
 
-        // Close modal when clicking outside
-        document.getElementById('addStudentModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closeAddStudentModal();
-            }
-        });
+    });
     </script>
 </body>
 </html>
