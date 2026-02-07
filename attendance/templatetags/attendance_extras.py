@@ -7,10 +7,11 @@ def get_item(dictionary, key):
     return dictionary.get(key)
 
 @register.simple_tag
-def get_attendance(records, student_id, date):
-    return records.get((student_id, date), 'PRESENT')
+def get_attendance(records_dict, student_id, date):
+    return records_dict.get(student_id, "")  # only stored records
 
 @register.simple_tag
-def get_status_icon(records, student_id, date):
-    status = records.get((student_id, date), 'PRESENT')
-    return '✓' if status == 'PRESENT' else '✗'
+def get_status_icon(records_dict, student_id, date):
+    status = get_attendance(records_dict, student_id, date)
+    icons = {"PRESENT": "✓", "ABSENT": "✗", "LATE": "L", "HOLIDAY": "H", "": ""}
+    return icons.get(status, "")

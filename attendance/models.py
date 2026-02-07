@@ -72,7 +72,7 @@ class StudentEnrollment(models.Model):
 
 class AttendanceSession(models.Model):
     class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE, related_name='sessions')
-    date = models.DateField(auto_now_add=True)
+    date = models.DateField()
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
 
