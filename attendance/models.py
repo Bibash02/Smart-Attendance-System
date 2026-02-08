@@ -95,6 +95,32 @@ class AttendanceRecord(models.Model):
     class Meta:
         unique_together = ('session', 'student')
 
+class Attendance(models.Model):
+    STATUS_CHOICES = [
+        ('PRESENT', 'Present'),
+        ('ABSENT', 'Absent'),
+        ('LATE', 'Late'),
+        ('HOLIDAY', 'Holiday'),
+    ]
+
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE)
+    group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
+
+    date = models.DateField()
+
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES
+    )
+
+    is_locked = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('student', 'group', 'date')
+
+
 class QRCode(models.Model):
     session = models.OneToOneField(AttendanceSession, on_delete=models.CASCADE)
     code = models.CharField(max_length=255)

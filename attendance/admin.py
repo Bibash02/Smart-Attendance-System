@@ -51,3 +51,7 @@ class QRCodeAdmin(admin.ModelAdmin):
 @admin.register(Subject)
 class SubjectAdmin(admin.ModelAdmin):
     list_display = ['id', 'name', 'code']
+
+@admin.register(Attendance)
+class AttendanceAdmin(admin.ModelAdmin):
+    list_display = ['id', 'student', 'group', 'date', 'status', 'is_locked', 'created_at']

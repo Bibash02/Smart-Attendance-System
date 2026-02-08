@@ -12,6 +12,7 @@ from django.contrib.auth import login, authenticate, logout
 from .utils import redirect_user_by_role
 from django.views.decorators.csrf import csrf_exempt
 import json
+from django.http import HttpResponseForbidden
 from datetime import date, datetime, timedelta
 from calendar import monthrange
 from django.db import transaction
@@ -347,59 +348,111 @@ def teacher_mark_attendance(request, session_id):
 #     })
 
 
+# def mark_attendance(request, group_id):
+#     group = get_object_or_404(ClassGroup, id=group_id)
+#     students = StudentProfile.objects.filter(class_group=group, is_active=True).order_by('roll_no')
+
+#     today = date.today()
+
+#     # Create a list of dates for current month
+#     start_month = today.replace(day=1)
+#     end_month = today.replace(day=28) + timedelta(days=4)  # move to next month safely
+#     last_day = end_month - timedelta(days=end_month.day)
+#     dates = [start_month + timedelta(days=i) for i in range(last_day.day)]
+
+#     # Fetch all attendance records for this month
+#     month_sessions = AttendanceSession.objects.filter(class_group=group, date__month=today.month)
+#     records = {}  # {date: {student_id: status}}
+#     for session in month_sessions:
+#         recs = {r.student.id: r.status for r in session.records.all()}
+#         records[session.date] = recs
+
+#     if request.method == "POST":
+#         # Only allow saving for today
+#         session, created = AttendanceSession.objects.get_or_create(
+#             class_group=group,
+#             date=today,
+#             defaults={'created_by': request.user}
+#         )
+
+#         # If already saved, prevent re-editing
+#         if session.records.exists():
+#             messages.error(request, "Today's attendance is already saved and locked.")
+#             return redirect(reverse('mark_attendance', args=[group.id]))
+
+#         # Save today attendance
+#         for student in students:
+#             key = f"attendance_{student.id}_{today}"
+#             status = request.POST.get(key)
+#             if status:
+#                 AttendanceRecord.objects.create(
+#                     session=session,
+#                     student=student,
+#                     status=status
+#                 )
+
+#         messages.success(request, f"Attendance for {today} saved successfully!")
+#         return redirect(reverse('mark_attendance', args=[group.id]))
+
+#     context = {
+#         'group': group,
+#         'students': students,
+#         'today': today,
+#         'dates': dates,
+#         'records': records,
+#     }
+#     return render(request, 'mark_attendance.html', context)
+
 def mark_attendance(request, group_id):
     group = get_object_or_404(ClassGroup, id=group_id)
-    students = StudentProfile.objects.filter(class_group=group, is_active=True).order_by('roll_no')
+
+    # ✅ FIX 1: correct field name
+    students = StudentProfile.objects.filter(
+        class_group=group,
+        is_active=True
+    )
 
     today = date.today()
 
-    # Create a list of dates for current month
-    start_month = today.replace(day=1)
-    end_month = today.replace(day=28) + timedelta(days=4)  # move to next month safely
-    last_day = end_month - timedelta(days=end_month.day)
-    dates = [start_month + timedelta(days=i) for i in range(last_day.day)]
+    # ✅ FIX 2: correct model name
+    already_saved = Attendance.objects.filter(
+        group=group,
+        date=today
+    ).exists()
 
-    # Fetch all attendance records for this month
-    month_sessions = AttendanceSession.objects.filter(class_group=group, date__month=today.month)
-    records = {}  # {date: {student_id: status}}
-    for session in month_sessions:
-        recs = {r.student.id: r.status for r in session.records.all()}
-        records[session.date] = recs
+    if request.method == 'POST':
 
-    if request.method == "POST":
-        # Only allow saving for today
-        session, created = AttendanceSession.objects.get_or_create(
-            class_group=group,
-            date=today,
-            defaults={'created_by': request.user}
-        )
+        # 🔒 Block re-saving
+        if already_saved:
+            return HttpResponseForbidden("Attendance already locked for today")
 
-        # If already saved, prevent re-editing
-        if session.records.exists():
-            messages.error(request, "Today's attendance is already saved and locked.")
-            return redirect(reverse('mark_attendance', args=[group.id]))
+        with transaction.atomic():
+            for student in students:
+                key = f"attendance_{student.id}_{today}"
+                status = request.POST.get(key)
 
-        # Save today attendance
-        for student in students:
-            key = f"attendance_{student.id}_{today}"
-            status = request.POST.get(key)
-            if status:
-                AttendanceRecord.objects.create(
-                    session=session,
-                    student=student,
-                    status=status
-                )
+                if status:
+                    Attendance.objects.create(
+                        student=student,
+                        group=group,
+                        date=today,
+                        status=status,
+                        is_locked=True
+                    )
 
-        messages.success(request, f"Attendance for {today} saved successfully!")
-        return redirect(reverse('mark_attendance', args=[group.id]))
+        return redirect('mark_attendance', group.id)
+
+    # 📊 For display only
+    records = Attendance.objects.filter(group=group)
 
     context = {
         'group': group,
         'students': students,
-        'today': today,
-        'dates': dates,
         'records': records,
+        'today': today,
+        'already_saved': already_saved,
     }
+
     return render(request, 'mark_attendance.html', context)
 
 @login_required
