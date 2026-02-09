@@ -10,99 +10,99 @@
     <link rel="stylesheet" href="{% static 'css/teacher.css' %}">
     <style>
         /* Page Header */
-    .page-header {
-        margin-bottom: 20px;
-    }
+        .page-header {
+            margin-bottom: 20px;
+        }
 
-    .page-header h2 {
-        font-size: 24px;
-        font-weight: 600;
-        color: #111827;
-        font-family: 'Outfit', sans-serif;
-    }
+        .page-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #111827;
+            font-family: 'Outfit', sans-serif;
+        }
 
-    /* Filter Bar */
-    .filter-bar {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        flex-wrap: wrap;
-        margin-bottom: 30px;
-    }
-
-    /* Search Box */
-    .search-box {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        background: #ffffff;
-        border: 1px solid #e5e7eb;
-        padding: 10px 14px;
-        border-radius: 10px;
-        width: 260px;
-        transition: all 0.3s ease;
-    }
-
-    .search-box svg {
-        width: 18px;
-        height: 18px;
-        color: #6b7280;
-    }
-
-    .search-box input {
-        border: none;
-        outline: none;
-        width: 100%;
-        font-size: 14px;
-        font-family: 'Outfit', sans-serif;
-        color: #374151;
-        background: transparent;
-    }
-
-    .search-box input::placeholder {
-        color: #9ca3af;
-    }
-
-    .search-box:focus-within {
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-
-    /* Filter Select Dropdown */
-    .filter-select {
-        padding: 10px 14px;
-        border-radius: 10px;
-        border: 1px solid #e5e7eb;
-        background: #ffffff;
-        font-size: 14px;
-        font-family: 'Outfit', sans-serif;
-        color: #374151;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .filter-select:hover {
-        border-color: #c7d2fe;
-    }
-
-    .filter-select:focus {
-        outline: none;
-        border-color: #6366f1;
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
+        /* Filter Bar */
         .filter-bar {
-            flex-direction: column;
-            align-items: stretch;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
         }
 
-        .search-box,
-        .filter-select {
-            width: 100%;
+        /* Search Box */
+        .search-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            padding: 10px 14px;
+            border-radius: 10px;
+            width: 260px;
+            transition: all 0.3s ease;
         }
-    }
+
+        .search-box svg {
+            width: 18px;
+            height: 18px;
+            color: #6b7280;
+        }
+
+        .search-box input {
+            border: none;
+            outline: none;
+            width: 100%;
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            color: #374151;
+            background: transparent;
+        }
+
+        .search-box input::placeholder {
+            color: #9ca3af;
+        }
+
+        .search-box:focus-within {
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Filter Select Dropdown */
+        .filter-select {
+            padding: 10px 14px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:hover {
+            border-color: #c7d2fe;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-box,
+            .filter-select {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -162,6 +162,11 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             </svg>
                             Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'logout' %}" class="nav-link">  
+                            Logout
                         </a>
                     </li>
                 </ul>
@@ -267,40 +272,31 @@
 
                 <!-- Actions -->
                 <div class="card-actions">
-                    
-                    {% for group in groups %}
-                    <div class="group-card">
+                    <!-- Mark Attendance button -->
+                    <a href="{% url 'mark_attendance' item.group.id %}" class="btn btn-primary">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7
+                                a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2
+                                M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                        </svg>
+                        Mark Attendance
+                    </a>
 
-                        <!-- YOUR CODE -->
-                        <div class="card-actions">
-                            <a href="{% url 'mark_attendance' group.id %}" class="btn btn-primary">
-                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7
-                                            a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2
-                                            M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
-                                </svg>
-                                Mark Attendance
-                            </a>
-                        </div>
-
-                    </div>
-                    {% endfor %}
-
+                    <!-- View Details button -->
                     <a href="" class="btn btn-outline">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M2.458 12C3.732 7.943 7.523 5 12 5
-                                    c4.478 0 8.268 2.943 9.542 7
-                                    -1.274 4.057-5.064 7-9.542 7
-                                    -4.477 0-8.268-2.943-9.542-7z"/>
+                                c4.478 0 8.268 2.943 9.542 7
+                                -1.274 4.057-5.064 7-9.542 7
+                                -4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
                         View Details
                     </a>
                 </div>
-
             </div>
             {% empty %}
             <div class="no-groups">

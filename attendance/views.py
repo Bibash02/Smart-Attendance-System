@@ -714,32 +714,34 @@ def group_list(request):
 def teacher_groups(request):
     user = request.user
     profile = user.userprofile
-    grades = Grade.objects.filter(is_active = True)
+    grades = Grade.objects.filter(is_active=True)
 
     groups = ClassGroup.objects.filter(
-        teacher = request.user,
-        is_active = True
+        teacher=user,
+        is_active=True
     ).select_related('subject', 'grade')
 
     group_data = []
 
     for group in groups:
+        # Correct student count
         students_count = StudentProfile.objects.filter(
-            grade = group.grade
+            class_group=group,
+            is_active=True
         ).count()
 
-        session = group.sessions.last()
+        last_date = Attendance.objects.filter(group=group).aggregate(
+            last_date=models.Max('date')
+        )['last_date']
 
-        present = absent = 0
-        percentage = 0
+        if last_date:
+            present = Attendance.objects.filter(group=group, date=last_date, status='PRESENT').count()
+            absent = Attendance.objects.filter(group=group, date=last_date, status='ABSENT').count()
+            total = Attendance.objects.filter(group=group, date=last_date).count()
+            percentage = round((present / total) * 100, 1) if total > 0 else 0
+        else:
+            present = absent = percentage = 0
 
-        if session:
-            present = session.records.filter(status='PRESENT').count()
-            absent = session.records.filter(status='ABSENT').count()
-            total = present + absent
-            if total > 0:
-                percentage = round((present / total) * 100, 1)
-        
         group_data.append({
             'group': group,
             'students_count': students_count,
@@ -748,13 +750,15 @@ def teacher_groups(request):
             'percentage': percentage
         })
 
-    return render(request, 'teacher_groups.html', {
+    context = {
         'grades': grades,
         'groups': groups,
         'group_data': group_data,
         'teacher': user,
         'profile': profile
-    })
+    }
+
+    return render(request, 'teacher_groups.html', context)
 
 def teacher_qr_attendance(request):
     return render(request, 'teacher_qr-attendance.html')
