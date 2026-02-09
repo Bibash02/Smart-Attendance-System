@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="{% static 'css/mark_attendance.css' %}">
 </head>
 <body>
+    <a href="{% url 'teacher_groups' %}" class="btn-back">
+        ← Back to Dashboard
+    </a>
+
     <form method="post" id="attendanceForm">
         {% csrf_token %}
         
@@ -63,6 +67,7 @@
                             </td>
                             {% for date in dates %}
                             <td class="status-cell">
+
                                 {% get_attendance records student.id date as status %}
                                 {% get_status_icon records student.id date as icon %}
 
@@ -71,11 +76,20 @@
                                     id="status_{{ student.id }}_{{ date|date:'Y-m-d' }}"
                                     value="{{ status }}">
 
-                                <button type="button"
-                                        class="status-btn {% if status %}{{ status|lower }}{% endif %}"
-                                        onclick="toggleStatus({{ student.id }}, '{{ date|date:'Y-m-d' }}', this)">
-                                    {{ icon }}
-                                </button>
+                                {% if date != active_date %}
+                                    <button type="button"
+                                            class="status-btn locked"
+                                            disabled>
+                                        {{ icon }}
+                                    </button>
+                                {% else %}
+                                    <button type="button"
+                                            class="status-btn {% if status %}{{ status|lower }}{% endif %}"
+                                            onclick="toggleStatus({{ student.id }}, '{{ date|date:'Y-m-d' }}', this)">
+                                        {{ icon }}
+                                    </button>
+                                {% endif %}
+
                             </td>
                             {% endfor %}
                         </tr>

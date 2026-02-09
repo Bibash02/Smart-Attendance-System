@@ -406,51 +406,86 @@ def teacher_mark_attendance(request, session_id):
 def mark_attendance(request, group_id):
     group = get_object_or_404(ClassGroup, id=group_id)
 
-    # ✅ FIX 1: correct field name
     students = StudentProfile.objects.filter(
         class_group=group,
         is_active=True
+    ).order_by('roll_no')
+
+    # ---------------------------
+    # MONTH HANDLING
+    # ---------------------------
+    selected_month = request.GET.get('month') or request.POST.get('month')
+
+    if selected_month:
+        year, month = map(int, selected_month.split('-'))
+    else:
+        today = date.today()
+        year, month = today.year, today.month
+
+    # All dates of the month
+    total_days = monthrange(year, month)[1]
+    dates = [date(year, month, d) for d in range(1, total_days + 1)]
+
+    # ---------------------------
+    # ATTENDANCE RECORDS
+    # ---------------------------
+    records = Attendance.objects.filter(
+        group=group,
+        date__year=year,
+        date__month=month
     )
 
-    today = date.today()
+    saved_dates = set(
+        records.values_list('date', flat=True)
+    )
 
-    # ✅ FIX 2: correct model name
-    already_saved = Attendance.objects.filter(
-        group=group,
-        date=today
-    ).exists()
+    # 🔥 FIND ACTIVE DATE (FIRST UNSAVED DAY)
+    active_date = None
+    for d in dates:
+        if d not in saved_dates:
+            active_date = d
+            break
 
+    # If everything is saved, lock the month
+    already_saved = active_date is None
+
+    # ---------------------------
+    # SAVE ATTENDANCE
+    # ---------------------------
     if request.method == 'POST':
 
-        # 🔒 Block re-saving
         if already_saved:
-            return HttpResponseForbidden("Attendance already locked for today")
+            return HttpResponseForbidden("Attendance already locked")
 
         with transaction.atomic():
             for student in students:
-                key = f"attendance_{student.id}_{today}"
+                key = f"attendance_{student.id}_{active_date}"
                 status = request.POST.get(key)
 
                 if status:
-                    Attendance.objects.create(
+                    Attendance.objects.update_or_create(
                         student=student,
                         group=group,
-                        date=today,
-                        status=status,
-                        is_locked=True
+                        date=active_date,
+                        defaults={
+                            'status': status,
+                            'is_locked': True
+                        }
                     )
 
-        return redirect('mark_attendance', group.id)
-
-    # 📊 For display only
-    records = Attendance.objects.filter(group=group)
+        # 🔁 AUTO MOVE TO NEXT DAY
+        return redirect(
+            f"{request.path}?month={year}-{month:02d}"
+        )
 
     context = {
         'group': group,
         'students': students,
+        'dates': dates,
         'records': records,
-        'today': today,
+        'active_date': active_date,
         'already_saved': already_saved,
+        'selected_month': f"{year}-{month:02d}",
     }
 
     return render(request, 'mark_attendance.html', context)
