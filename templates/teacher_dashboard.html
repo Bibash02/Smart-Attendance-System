@@ -158,7 +158,7 @@
                         </svg>
                         Face Recognition
                     </a>
-                    <a href="reports.html" class="action-btn">
+                    <a href="{% url 'teacher_reports' %}" class="action-btn">
                         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
@@ -171,74 +171,46 @@
             <div class="groups-section">
                 <div class="section-header">
                     <h3>Today's Classes</h3>
-                    <a href="groups.html" class="view-all">View All →</a>
                 </div>
 
+                {% for item in today_classes %}
                 <div class="group-card">
                     <div class="group-header">
                         <div class="group-info">
-                            <h4>Mathematics - Grade 10A</h4>
+                            <h4>
+                                {{ item.group.subject.name }} - {{ item.group.grade.name }}
+                            </h4>
                             <div class="group-meta">
-                                <span>👥 32 Students</span>
-                                <span>🕐 9:00 AM - 10:30 AM</span>
+                                <span>👥 {{ item.student_count }} Students</span>
+                                {% if item.group.start_time and item.group.end_time %}
+                                    <span>🕐 {{ item.group.start_time }} - {{ item.group.end_time }}</span>
+                                {% endif %}
                             </div>
                         </div>
-                        <span class="badge pending">Pending</span>
-                    </div>
-                    <div class="attendance-progress">
-                        <div class="progress-label">
-                            <span style="color: var(--text-secondary)">This Week's Attendance</span>
-                            <span style="font-weight: 600">94%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 94%"></div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="group-card">
-                    <div class="group-header">
-                        <div class="group-info">
-                            <h4>Advanced Calculus - Grade 12</h4>
-                            <div class="group-meta">
-                                <span>👥 28 Students</span>
-                                <span>🕐 11:00 AM - 12:30 PM</span>
-                            </div>
-                        </div>
-                        <span class="badge pending">Pending</span>
+                        <span class="badge {% if item.status == 'Completed' %}completed{% else %}pending{% endif %}">
+                            {{ item.status }}
+                        </span>
                     </div>
-                    <div class="attendance-progress">
-                        <div class="progress-label">
-                            <span style="color: var(--text-secondary)">This Week's Attendance</span>
-                            <span style="font-weight: 600">89%</span>
-                        </div>
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: 89%"></div>
-                        </div>
-                    </div>
-                </div>
 
-                <div class="group-card">
-                    <div class="group-header">
-                        <div class="group-info">
-                            <h4>Mathematics - Grade 9B</h4>
-                            <div class="group-meta">
-                                <span>👥 30 Students</span>
-                                <span>🕐 2:00 PM - 3:30 PM</span>
-                            </div>
-                        </div>
-                        <span class="badge pending">Pending</span>
-                    </div>
                     <div class="attendance-progress">
                         <div class="progress-label">
-                            <span style="color: var(--text-secondary)">This Week's Attendance</span>
-                            <span style="font-weight: 600">91%</span>
+                            <span style="color: var(--text-secondary)">
+                                This Week's Attendance
+                            </span>
+                            <span style="font-weight: 600">
+                                {{ item.percentage }}%
+                            </span>
                         </div>
+
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: 91%"></div>
+                            <div class="progress-fill" style="width: {{ item.percentage }}%"></div>
                         </div>
                     </div>
                 </div>
+                {% empty %}
+                <p style="color: var(--text-secondary)">No classes assigned today.</p>
+                {% endfor %}
             </div>
         </main>
     </div>

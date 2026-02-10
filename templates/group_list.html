@@ -136,10 +136,10 @@
                 {% endif %}
                 
                 <div class="group-actions">
-                    <a href="{% url 'attendance:mark_attendance' group.id %}" class="btn btn-primary">
+                    <a href="{% url 'mark_attendance' group.id %}" class="btn btn-primary">
                         ✓ Mark Attendance
                     </a>
-                    <a href="{% url 'attendance:report' group.id %}" class="btn btn-secondary">
+                    <a href="{% url 'teacher_reports' %}" class="btn btn-secondary">
                         📊 Report
                     </a>
                 </div>

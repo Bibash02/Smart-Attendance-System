@@ -98,7 +98,34 @@ def teacher_dashboard(request):
     if request.user.userprofile.role != 'TEACHER':
         return redirect('login')
 
+    teacher = request.user
     today = now().date()
+    week_start = today - timedelta(days=6)
+
+    groups = ClassGroup.objects.filter(teacher = teacher, is_active = True).select_related('subject', 'grade')
+
+    today_classes = []
+
+    for group in groups:
+        student_count = StudentProfile.objects.filter(class_group = group, is_active = True).count()
+
+        # check if attendance is marked today
+        marked_today = Attendance.objects.filter(group = group, date = today).exists()
+
+        # weekly attendance
+        week_records = Attendance.objects.filter(group = group, date__range = [week_start, today])
+
+        present = week_records.filter(status = 'PRESENT').count()
+        total = week_records.count()
+
+        percentage = round((present / total) * 100, 1) if total > 0 else 0
+
+        today_classes.append({
+            'group': group,
+            'student_count': student_count,
+            'percentage': percentage,
+            'status': 'Completed' if marked_today else 'Pending'
+        })
 
     classes = ClassGroup.objects.filter(
         teacher = request.user,
@@ -148,7 +175,8 @@ def teacher_dashboard(request):
         'classes': classes,
         'teacher': request.user,
         'profile': request.user.userprofile,
-        'now': now()
+        'now': now(),
+        'today_classes': today_classes
     }
 
     return render(request, 'teacher_dashboard.html', context)
@@ -550,7 +578,9 @@ def teacher_reports(request):
         'total_late': total_late,
         'overall_rate': overall_rate,
         'student_reports': student_reports,
-        'grades': grades
+        'grades': grades,
+        'teacher': request.user,
+        'profile': request.user.userprofile
     }
 
     return render(request, 'teacher_reports.html', context)
