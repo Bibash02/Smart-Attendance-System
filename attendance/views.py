@@ -17,6 +17,7 @@ from datetime import date, datetime, timedelta
 from calendar import monthrange
 from django.db import transaction
 from django.urls import reverse
+from calendar import monthrange
 
 
 # Create your views here.
@@ -194,38 +195,38 @@ def create_attendace_session(request, class_id):
 
     return redirect('mark_attendace', session.id)
 
-def teacher_mark_attendance(request, session_id):
-    teacher = request.user
+# def teacher_mark_attendance(request, session_id):
+#     teacher = request.user
 
-    groups = ClassGroup.objects.filter(
-        teacher=teacher,
-        is_active=True
-    ).select_related('subject', 'grade')
+#     groups = ClassGroup.objects.filter(
+#         teacher=teacher,
+#         is_active=True
+#     ).select_related('subject', 'grade')
 
-    selected_group = None
-    students = []
+#     selected_group = None
+#     students = []
 
-    group_id = request.GET.get('group')
+#     group_id = request.GET.get('group')
 
-    if group_id:
-        selected_group = get_object_or_404(
-            ClassGroup,
-            id=group_id,
-            teacher=teacher
-        )
+#     if group_id:
+#         selected_group = get_object_or_404(
+#             ClassGroup,
+#             id=group_id,
+#             teacher=teacher
+#         )
 
-        students = StudentProfile.objects.filter(
-            grade=selected_group.grade
-        ).select_related('user')
+#         students = StudentProfile.objects.filter(
+#             grade=selected_group.grade
+#         ).select_related('user')
 
-    context = {
-        'groups': groups,
-        'selected_group': selected_group,
-        'students': students,
-        'today': date.today(),
-    }
+#     context = {
+#         'groups': groups,
+#         'selected_group': selected_group,
+#         'students': students,
+#         'today': date.today(),
+#     }
 
-    return render(request, 'teacher_mark_attendance.html', context)
+#     return render(request, 'teacher_mark_attendance.html', context)
 
 def mark_attendance(request, group_id):
     group = get_object_or_404(ClassGroup, id=group_id)
@@ -325,10 +326,17 @@ def add_student(request, group_id):
     student_id = request.POST.get('student_id')
     email = request.POST.get('student_email')
 
+    # check duplicate student_id
     if StudentProfile.objects.filter(student_id=student_id).exists():
         messages.error(request, 'Student ID already exists')
         return redirect('mark_attendance', group_id=group.id)
-
+    
+    # check duplicate username
+    if User.objects.filter(username = student_id).exists():
+        messages.error(request, "Username already exist.")
+        return redirect('mark_attendance', group_id = group.id)
+    
+    # create user
     user = User.objects.create_user(
         username=student_id,
         email=email,
@@ -337,6 +345,7 @@ def add_student(request, group_id):
     user.first_name = name
     user.save()
 
+    # createe student profile
     student = StudentProfile.objects.create(
         user=user,
         grade=group.grade,
@@ -345,6 +354,7 @@ def add_student(request, group_id):
         roll_no=StudentProfile.objects.filter(class_group=group).count() + 1
     )
 
+    # enrollment
     StudentEnrollment.objects.create(
         student=student,
         class_group=group
@@ -584,6 +594,69 @@ def teacher_reports(request):
     }
 
     return render(request, 'teacher_reports.html', context)
+
+# @login_required
+# def student_dashboard(request):
+
+#     user = request.user
+
+#     # Ensure this account is a student
+#     if not hasattr(user, 'studentprofile'):
+#         return redirect('login')
+
+#     student = user.studentprofile
+#     today = now().date()
+
+#     first_day = today.replace(day=1)
+#     last_day = today.replace(day=monthrange(today.year, today.month)[1])
+
+#     monthly_attendance = Attendance.objects.filter(
+#         student=student,
+#         date__range=[first_day, last_day]
+#     )
+
+#     total_present = monthly_attendance.filter(status='PRESENT').count()
+#     total_absent = monthly_attendance.filter(status='ABSENT').count()
+#     total_classes = monthly_attendance.count()
+
+#     attendance_percentage = (
+#         round((total_present / total_classes) * 100, 1)
+#         if total_classes > 0 else 0
+#     )
+
+#     streak = 0
+#     check_date = today
+
+#     while Attendance.objects.filter(
+#         student=student,
+#         date=check_date,
+#         status='PRESENT'
+#     ).exists():
+#         streak += 1
+#         check_date -= timedelta(days=1)
+
+#     context = {
+#         'student': student,
+#         'total_present': total_present,
+#         'total_absent': total_absent,
+#         'total_classes': total_classes,
+#         'attendance_percentage': attendance_percentage,
+#         'streak': streak,
+#     }
+
+#     return render(request, 'student_dashboard.html', context)
+
+# def redirect_dashboard(request):
+#     user = request.user
+
+#     if hasattr(user, 'studentprofile'):
+#         return redirect('student_dashboard')
+
+#     elif hasattr(user, 'userprofile'):
+#         return redirect('teacher_dashboard')
+
+#     else:
+#         return redirect('login')
 
 def student_dashboard(request):
     user = request.user

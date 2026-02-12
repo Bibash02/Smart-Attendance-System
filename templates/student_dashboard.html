@@ -51,8 +51,8 @@
             <div class="stat-card attendance">
                 <div class="stat-header">
                     <div>
-                        <div class="stat-value">94.5%</div>
-                        <div class="stat-label">Attendance Rate</div>
+                        <div class="stat-value">{{ total_present }}</div>
+                        <div class="stat-label">Total Present</div>
                     </div>
                     <div class="stat-icon">📊</div>
                 </div>
@@ -61,8 +61,8 @@
             <div class="stat-card classes">
                 <div class="stat-header">
                     <div>
-                        <div class="stat-value">24</div>
-                        <div class="stat-label">Classes This Week</div>
+                        <div class="stat-value">{{ total_classes }}</div>
+                        <div class="stat-label">Total classes this month</div>
                     </div>
                     <div class="stat-icon">📚</div>
                 </div>
@@ -71,7 +71,7 @@
             <div class="stat-card absences">
                 <div class="stat-header">
                     <div>
-                        <div class="stat-value">3</div>
+                        <div class="stat-value">{{ total_absent }}</div>
                         <div class="stat-label">Total Absences</div>
                     </div>
                     <div class="stat-icon">⚠️</div>
@@ -81,7 +81,7 @@
             <div class="stat-card streak">
                 <div class="stat-header">
                     <div>
-                        <div class="stat-value">12</div>
+                        <div class="stat-value">{{ streak }}</div>
                         <div class="stat-label">Day Streak</div>
                     </div>
                     <div class="stat-icon">⭐</div>
@@ -106,28 +106,14 @@
                 </div>
 
                 <div class="class-item">
-                    <div class="class-time">⏰ 10:00 - 11:30</div>
-                    <div class="class-name">Data Structures</div>
-                    <div class="class-teacher">Dr. Williams</div>
-                    <span class="class-status present">✓ Present</span>
-                </div>
-
-                <div class="class-item">
                     <div class="class-time">⏰ 13:00 - 14:30</div>
                     <div class="class-name">Web Development</div>
                     <div class="class-teacher">Prof. Anderson</div>
                     <span class="class-status upcoming">⏳ Upcoming</span>
                 </div>
 
-                <div class="class-item">
-                    <div class="class-time">⏰ 15:00 - 16:30</div>
-                    <div class="class-name">Database Systems</div>
-                    <div class="class-teacher">Dr. Martinez</div>
-                    <span class="class-status upcoming">⏳ Upcoming</span>
-                </div>
-
                 <div class="quick-actions">
-                    <a href="{% url 'mark_attendance' %}" class="action-btn">📸 Mark Attendance</a>
+                    <a href="{% url 'student_mark_attendance' %}" class="action-btn">📸 Mark Attendance</a>
                     <a href="{% url 'student_attendance' %}" class="action-btn secondary">📋 View Records</a>
                 </div>
             </div>

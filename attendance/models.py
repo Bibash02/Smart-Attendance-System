@@ -8,7 +8,7 @@ class UserProfile(models.Model):
         ('TEACHER', 'Teacher'),
         ('STUDENT', 'Student')
     ]
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='userprofile')
     role = models.CharField(max_length=10, choices=ROLE_CHOICES)
     phone = models.CharField(max_length=10, blank=True)
     profile_image = models.ImageField(upload_to='profiles/', null=True, blank=True)
@@ -51,7 +51,7 @@ class ClassGroup(models.Model):
         return self.name
 
 class StudentProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='studentprofile')
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
     student_id = models.CharField(max_length=20, unique=True)
     class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)

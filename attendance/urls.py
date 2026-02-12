@@ -7,9 +7,10 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('forgot-password', forgot_password, name='forgot_password'),
+    # path('login/redirect', redirect_dashboard, name='redirect_dashboard'),
 
     path('teacher/dashboard', teacher_dashboard, name='teacher_dashboard'),
-    path('teacher/mark', teacher_mark_attendance, name='teacher_mark_attendance'),
+    # path('teacher/mark', teacher_mark_attendance, name='teacher_mark_attendance'),
     path('teacher/groups', teacher_groups, name='teacher_groups'),
     path('teacher/attendance', teacher_qr_attendance, name='teacher_qr-attendance'),
     path('teacher/reports', teacher_reports, name='teacher_reports'),
