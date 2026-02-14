@@ -17,7 +17,7 @@
         }
 
         body {
-            font-family: 'DM Serif Display', serif;
+            font-family: 'Outfit', sans-serif;
             background: var(--bg-dark);
             color: var(--text-primary);
             min-height: 100vh;

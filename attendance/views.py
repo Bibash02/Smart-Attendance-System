@@ -24,24 +24,28 @@ from calendar import monthrange
 def auth(request):
     return render(request, 'signin.html')
 
-def register_view(request):
+def auth_page(request):
+    class_groups = ClassGroup.objects.all()
+    return render(request, "signin.html", {
+        "class_groups": class_groups
+    })
+
+def teacher_register(request):
     if request.method == "POST":
         name = request.POST.get("name")
         email = request.POST.get("email")
-        role = request.POST.get("role")
         password = request.POST.get("password")
-        confirm = request.POST.get("confirm_password")
+        confirm_password = request.POST.get("confirm_password")
 
-        if password != confirm:
-            return render(request, 'signin.html', {
-                "reg_error": "Passwords do not match"
-            })
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect("auth_page")
 
-        if User.objects.filter(email=email).exists():
-            return render(request, 'signin.html', {
-                "reg_error": "Email already exists"
-            })
+        if User.objects.filter(username=email).exists():
+            messages.error(request, "Email already exists.")
+            return redirect("auth_page")
 
+        # Create User
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -49,44 +53,133 @@ def register_view(request):
             first_name=name
         )
 
-        UserProfile.objects.create(
-            user=user,
-            role=role
+        # Create UserProfile
+        UserProfile.objects.create(user=user, role="TEACHER")
+
+        messages.success(request, "Teacher registered successfully. You can now login.")
+        return redirect("auth_page")
+
+    return redirect("auth_page")
+
+def student_register(request):
+    if request.method == "POST":
+        full_name = request.POST.get("full_name")
+        email = request.POST.get("email")
+        student_id = request.POST.get("student_id")
+        class_group_id = request.POST.get("class_group")
+        password = request.POST.get("password")
+        confirm_password = request.POST.get("confirm_password")
+
+        if password != confirm_password:
+            messages.error(request, "Passwords do not match.")
+            return redirect("auth_page")
+
+        # Check student exists (created by teacher)
+        try:
+            student = StudentProfile.objects.get(
+                student_id=student_id,
+                class_group_id=class_group_id,
+                email=email,
+                full_name=full_name
+            )
+        except StudentProfile.DoesNotExist:
+            messages.error(request, "Student not found. Contact your teacher.")
+            return redirect("auth_page")
+
+        if student.user:
+            messages.error(request, "Already registered.")
+            return redirect("auth_page")
+
+        # Create user account
+        user = User.objects.create_user(
+            username=student_id,
+            email=email,
+            password=password,
+            first_name=full_name
         )
 
-        return redirect('signin')
+        UserProfile.objects.create(user=user, role="STUDENT")
 
-    return redirect('signin')
+        student.user = user
+        student.save()
+
+        return redirect("auth_page")
+
+    return redirect("auth_page")
+
+
+# def register_view(request):
+#     if request.method == "POST":
+#         name = request.POST.get("name")
+#         email = request.POST.get("email")
+#         role = request.POST.get("role")
+#         password = request.POST.get("password")
+#         confirm = request.POST.get("confirm_password")
+
+#         if password != confirm:
+#             return render(request, 'signin.html', {
+#                 "reg_error": "Passwords do not match"
+#             })
+
+#         if User.objects.filter(email=email).exists():
+#             return render(request, 'signin.html', {
+#                 "reg_error": "Email already exists"
+#             })
+
+#         user = User.objects.create_user(
+#             username=email,
+#             email=email,
+#             password=password,
+#             first_name=name
+#         )
+
+#         UserProfile.objects.create(
+#             user=user,
+#             role=role
+#         )
+
+#         return redirect('signin')
+
+#     return redirect('signin')
 
 def login_view(request):
     if request.method == "POST":
         email = request.POST.get("email")
         password = request.POST.get("password")
 
+        # Try to get the user by email
         try:
             user_obj = User.objects.get(email=email)
-            user = authenticate(
-                request,
-                username=user_obj.username,
-                password=password
-            )
         except User.DoesNotExist:
-            user = None
+            messages.error(request, "Invalid email or password.")
+            return redirect('auth_page')
 
-        if user:
-            login(request, user)
+        # Authenticate using username (email used as username)
+        user = authenticate(request, username=user_obj.username, password=password)
 
-            role = user.userprofile.role
+        if user is None:
+            messages.error(request, "Invalid email or password.")
+            return redirect('auth_page')
+
+        login(request, user)
+
+        # Check role safely
+        if hasattr(user, 'userprofile'):
+            role = user.userprofile.role.strip().upper()
             if role == "TEACHER":
                 return redirect('teacher_dashboard')
             elif role == "STUDENT":
                 return redirect('student_dashboard')
+            elif role == "ADMIN":
+                return redirect('admin_dashboard')
+            else:
+                messages.error(request, "Role not assigned properly.")
+                return redirect('auth_page')
+        else:
+            messages.error(request, "UserProfile not found. Contact admin.")
+            return redirect('auth_page')
 
-        return render(request, 'signin.html', {
-            "login_error": "Invalid email or password"
-        })
-
-    return redirect('signin')
+    return redirect('auth_page')
 
 def logout_view(request):
     logout(request)
