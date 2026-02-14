@@ -150,6 +150,16 @@
             font-family: 'Space Mono', monospace;
         }
 
+        .logout-btn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
         /* Stats Grid */
         .stats-grid {
             display: grid;

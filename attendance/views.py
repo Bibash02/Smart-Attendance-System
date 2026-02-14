@@ -64,7 +64,7 @@ def teacher_register(request):
 def student_register(request):
     if request.method == "POST":
         full_name = request.POST.get("full_name")
-        email = request.POST.get("email")
+        email = request.POST.get("email").strip().lower()
         student_id = request.POST.get("student_id")
         class_group_id = request.POST.get("class_group")
         password = request.POST.get("password")
@@ -74,35 +74,43 @@ def student_register(request):
             messages.error(request, "Passwords do not match.")
             return redirect("auth_page")
 
-        # Check student exists (created by teacher)
+        # 🔥 Check student exists (created by teacher)
         try:
             student = StudentProfile.objects.get(
                 student_id=student_id,
                 class_group_id=class_group_id,
-                email=email,
-                full_name=full_name
+                is_active=True
             )
         except StudentProfile.DoesNotExist:
             messages.error(request, "Student not found. Contact your teacher.")
             return redirect("auth_page")
 
+        # 🔥 Prevent double registration
         if student.user:
             messages.error(request, "Already registered.")
             return redirect("auth_page")
 
-        # Create user account
+        # 🔥 Prevent duplicate email
+        if User.objects.filter(username=email).exists():
+            messages.error(request, "Email already registered.")
+            return redirect("auth_page")
+
+        # 🔥 Create user account
         user = User.objects.create_user(
-            username=student_id,
-            email=email,
+            username=email.strip().lower(),   # IMPORTANT: use email as username
+            email=email.strip().lower(),
             password=password,
             first_name=full_name
         )
 
+        # 🔥 Assign role
         UserProfile.objects.create(user=user, role="STUDENT")
 
+        # 🔥 Link student profile
         student.user = user
         student.save()
 
+        messages.success(request, "Registration successful. Please login.")
         return redirect("auth_page")
 
     return redirect("auth_page")
@@ -415,30 +423,43 @@ def add_student(request, group_id):
 
     group = get_object_or_404(ClassGroup, id=group_id)
 
-    name = request.POST.get('student_name')
-    student_id = request.POST.get('student_id')
-    email = request.POST.get('student_email')
+    # Get form data
+    name = request.POST.get('student_name').strip()
+    student_id = request.POST.get('student_id').strip()
+    email = request.POST.get('student_email', '').strip().lower()
+    password = request.POST.get('student_password', 'student123').strip()  # optional: teacher can provide password
 
-    # check duplicate student_id
+    # Validate required fields
+    if not name or not student_id or not password:
+        messages.error(request, 'Please fill all required fields.')
+        return redirect('mark_attendance', group_id=group.id)
+
+    # Check duplicate student_id
     if StudentProfile.objects.filter(student_id=student_id).exists():
-        messages.error(request, 'Student ID already exists')
+        messages.error(request, 'Student ID already exists.')
         return redirect('mark_attendance', group_id=group.id)
     
-    # check duplicate username
-    if User.objects.filter(username = student_id).exists():
-        messages.error(request, "Username already exist.")
-        return redirect('mark_attendance', group_id = group.id)
-    
-    # create user
+    # Check duplicate username/email
+    if User.objects.filter(username=student_id).exists() or (email and User.objects.filter(email=email).exists()):
+        messages.error(request, "Username or email already exists.")
+        return redirect('mark_attendance', group_id=group.id)
+
+    # Create Django User
     user = User.objects.create_user(
-        username=student_id,
-        email=email,
-        password='student123'
+        username=student_id,   # we can also use email as username if you prefer
+        email=email if email else None,
+        password=password
     )
     user.first_name = name
     user.save()
 
-    # createe student profile
+    # Create UserProfile (role = STUDENT)
+    UserProfile.objects.create(
+        user=user,
+        role='STUDENT'
+    )
+
+    # Create StudentProfile
     student = StudentProfile.objects.create(
         user=user,
         grade=group.grade,
@@ -447,15 +468,15 @@ def add_student(request, group_id):
         roll_no=StudentProfile.objects.filter(class_group=group).count() + 1
     )
 
-    # enrollment
+    # Optional: create enrollment
     StudentEnrollment.objects.create(
         student=student,
         class_group=group
     )
 
-    messages.success(request, 'Student added successfully')
-
+    messages.success(request, f'Student "{name}" added successfully. They can now login.')
     return redirect('mark_attendance', group_id=group.id)
+
 
 def save_attendance(request, group, year, month):
     today = now().date()
@@ -688,56 +709,56 @@ def teacher_reports(request):
 
     return render(request, 'teacher_reports.html', context)
 
-# @login_required
-# def student_dashboard(request):
+@login_required
+def student_dashboard(request):
 
-#     user = request.user
+    user = request.user
 
-#     # Ensure this account is a student
-#     if not hasattr(user, 'studentprofile'):
-#         return redirect('login')
+    # Ensure this account is a student
+    if not hasattr(user, 'studentprofile'):
+        return redirect('login')
 
-#     student = user.studentprofile
-#     today = now().date()
+    student = user.studentprofile
+    today = now().date()
 
-#     first_day = today.replace(day=1)
-#     last_day = today.replace(day=monthrange(today.year, today.month)[1])
+    first_day = today.replace(day=1)
+    last_day = today.replace(day=monthrange(today.year, today.month)[1])
 
-#     monthly_attendance = Attendance.objects.filter(
-#         student=student,
-#         date__range=[first_day, last_day]
-#     )
+    monthly_attendance = Attendance.objects.filter(
+        student=student,
+        date__range=[first_day, last_day]
+    )
 
-#     total_present = monthly_attendance.filter(status='PRESENT').count()
-#     total_absent = monthly_attendance.filter(status='ABSENT').count()
-#     total_classes = monthly_attendance.count()
+    total_present = monthly_attendance.filter(status='PRESENT').count()
+    total_absent = monthly_attendance.filter(status='ABSENT').count()
+    total_classes = monthly_attendance.count()
 
-#     attendance_percentage = (
-#         round((total_present / total_classes) * 100, 1)
-#         if total_classes > 0 else 0
-#     )
+    attendance_percentage = (
+        round((total_present / total_classes) * 100, 1)
+        if total_classes > 0 else 0
+    )
 
-#     streak = 0
-#     check_date = today
+    streak = 0
+    check_date = today
 
-#     while Attendance.objects.filter(
-#         student=student,
-#         date=check_date,
-#         status='PRESENT'
-#     ).exists():
-#         streak += 1
-#         check_date -= timedelta(days=1)
+    while Attendance.objects.filter(
+        student=student,
+        date=check_date,
+        status='PRESENT'
+    ).exists():
+        streak += 1
+        check_date -= timedelta(days=1)
 
-#     context = {
-#         'student': student,
-#         'total_present': total_present,
-#         'total_absent': total_absent,
-#         'total_classes': total_classes,
-#         'attendance_percentage': attendance_percentage,
-#         'streak': streak,
-#     }
+    context = {
+        'student': student,
+        'total_present': total_present,
+        'total_absent': total_absent,
+        'total_classes': total_classes,
+        'attendance_percentage': attendance_percentage,
+        'streak': streak,
+    }
 
-#     return render(request, 'student_dashboard.html', context)
+    return render(request, 'student_dashboard.html', context)
 
 # def redirect_dashboard(request):
 #     user = request.user
@@ -751,16 +772,51 @@ def teacher_reports(request):
 #     else:
 #         return redirect('login')
 
-def student_dashboard(request):
-    user = request.user
-    profile = user.userprofile
+# @login_required
+# def student_dashboard(request):
+#     user = request.user
 
-    context = {
-        'user': user,
-        'profile': profile,
-    }
+#     # Ensure the logged-in user has a student profile
+#     try:
+#         student = user.studentprofile
+#     except StudentProfile.DoesNotExist:
+#         messages.error(request, "You are not registered as a student.")
+#         return redirect('auth_page')  # or login page
 
-    return render(request, 'student_dashboard.html', context)
+#     profile = user.userprofile
+
+#     today = now().date()
+#     # Get first and last day of current month
+#     first_day = today.replace(day=1)
+#     last_day = today.replace(day=monthrange(today.year, today.month)[1])
+
+#     # Fetch monthly attendance
+#     monthly_attendance = Attendance.objects.filter(
+#         student=student,
+#         date__range=[first_day, last_day]
+#     )
+
+#     total_present = monthly_attendance.filter(status='PRESENT').count()
+#     total_absent = monthly_attendance.filter(status='ABSENT').count()
+#     total_classes = monthly_attendance.count()
+
+#     # Calculate attendance streak (consecutive present days up to today)
+#     streak = 0
+#     check_date = today
+#     while Attendance.objects.filter(student=student, date=check_date, status='PRESENT').exists():
+#         streak += 1
+#         check_date -= timedelta(days=1)
+
+#     context = {
+#         'user': user,
+#         'profile': profile,
+#         'total_present': total_present,
+#         'total_absent': total_absent,
+#         'total_classes': total_classes,
+#         'streak': streak,
+#     }
+
+#     return render(request, 'student_dashboard.html', context)
 
 def student_attendance(request):
     return render(request, 'student-attendance.html')

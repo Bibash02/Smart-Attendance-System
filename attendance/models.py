@@ -51,7 +51,7 @@ class ClassGroup(models.Model):
         return self.name
 
 class StudentProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='studentprofile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='studentprofile', null=True, blank=True)
     grade = models.ForeignKey(Grade, on_delete=models.CASCADE)
     student_id = models.CharField(max_length=20, unique=True)
     class_group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
