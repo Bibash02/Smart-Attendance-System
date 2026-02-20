@@ -1,0 +1,188 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Report - {{ student.user.get_full_name }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/reports.css' %}">
+    <style>
+        .student-profile-section {
+        display: flex;
+        align-items: center;
+        gap: 30px;
+        padding: 20px;
+    }
+
+    .student-avatar-lg {
+        width: 90px;
+        height: 90px;
+        background: var(--primary);
+        color: white;
+        font-size: 32px;
+        font-weight: 600;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .student-details h3 {
+        margin-bottom: 10px;
+        font-size: 22px;
+    }
+
+    .student-details p {
+        margin: 4px 0;
+        color: var(--text-muted);
+    }
+
+    .attendance-performance {
+        padding: 20px;
+    }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <main class="main-content">
+
+        <!-- Page Header -->
+        <div class="page-header">
+            <h2>Student Detailed Report</h2>
+            <a href="{% url 'teacher_reports' %}" class="btn">
+                ← Back to Reports
+            </a>
+        </div>
+
+        <!-- Student Profile Card -->
+        <div class="report-card">
+            <div class="report-header">
+                <h3>Student Information</h3>
+            </div>
+
+            <div class="student-profile-section">
+                <div class="student-avatar-lg">
+                    {{ student.user.first_name|slice:":1" }}{{ student.user.last_name|slice:":1" }}
+                </div>
+
+                <div class="student-details">
+                    <h3>{{ student.user.get_full_name }}</h3>
+                    <p><strong>Student ID:</strong> {{ student.student_id }}</p>
+                    <p><strong>Roll No:</strong> {{ student.roll_no }}</p>
+                    <p><strong>Class:</strong> {{ student.class_group.name }}</p>
+                    <p><strong>Grade:</strong> {{ student.grade.name }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="stats-overview">
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon success">✓</div>
+                </div>
+                <div class="stat-value" style="color: var(--success)">
+                    {{ present }}
+                </div>
+                <div class="stat-label">Present</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon danger">✗</div>
+                </div>
+                <div class="stat-value" style="color: var(--danger)">
+                    {{ absent }}
+                </div>
+                <div class="stat-label">Absent</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon warning">⏰</div>
+                </div>
+                <div class="stat-value" style="color: var(--warning)">
+                    {{ late }}
+                </div>
+                <div class="stat-label">Late</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon primary">📊</div>
+                </div>
+                <div class="stat-value" style="color: var(--primary)">
+                    {{ percentage }}%
+                </div>
+                <div class="stat-label">Attendance Rate</div>
+            </div>
+
+        </div>
+
+        <!-- Attendance Progress Bar -->
+        <div class="report-card">
+            <div class="report-header">
+                <h3>Attendance Performance</h3>
+            </div>
+
+            <div class="attendance-performance">
+                <div class="attendance-bar">
+                    <div class="bar-container">
+                        <div class="bar-fill"
+                             style="width: {{ percentage }}%">
+                        </div>
+                    </div>
+                    <span class="percentage">{{ percentage }}%</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance History Table -->
+        <div class="report-card">
+            <div class="report-header">
+                <h3>Attendance History</h3>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Class Group</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in records %}
+                        <tr>
+                            <td>{{ record.date }}</td>
+                            <td>{{ record.group.name }}</td>
+                            <td>
+                                {% if record.status == "PRESENT" %}
+                                    <span class="status-badge present">Present</span>
+                                {% elif record.status == "ABSENT" %}
+                                    <span class="status-badge absent">Absent</span>
+                                {% else %}
+                                    <span class="status-badge late">Late</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" style="text-align:center;">
+                                No attendance records found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+</body>
+</html>

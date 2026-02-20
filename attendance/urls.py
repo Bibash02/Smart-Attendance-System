@@ -1,22 +1,29 @@
 from django.urls import path
+from django.contrib.auth.views import *
 from .views import *
 
 urlpatterns = [
     # path('', auth_page, name='auth_page'),
-    path('', auth, name='auth'),
+    path('', auth, name='auth_page'),
     path('login/', login_view, name='login'),
     path('register/', register_view, name='register'),
     # path('student/register', student_register, name='student_register'),
     # path('teacher/register', teacher_register, name='teacher_register'),
     path('logout/', logout_view, name='logout'),
-    path('forgot-password', forgot_password, name='forgot_password'),
+    # path('forgot-password', forgot_password, name='forgot_password'),
     # path('login/redirect', redirect_dashboard, name='redirect_dashboard'),
+
+    path('forgot-password/', PasswordResetView.as_view(), name='password_reset'),
+    path('reset-password-sent/', PasswordResetDoneView.as_view(), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
+    path('reset-complete/', PasswordResetCompleteView.as_view(), name='password_reset_complete'),
 
     path('teacher/dashboard', teacher_dashboard, name='teacher_dashboard'),
     # path('teacher/mark', teacher_mark_attendance, name='teacher_mark_attendance'),
     path('teacher/groups', teacher_groups, name='teacher_groups'),
     path('teacher/attendance', teacher_qr_attendance, name='teacher_qr-attendance'),
     path('teacher/reports', teacher_reports, name='teacher_reports'),
+    path('teacher/report/<int:student_id>/', student_detail_report, name='student_detail_report'),
 
     path('teacher/mark-attendance/<int:group_id>/', mark_attendance, name='mark_attendance'),
     path('teacher/add_student/<int:group_id>', add_student, name='add_student'),

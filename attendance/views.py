@@ -709,6 +709,34 @@ def teacher_reports(request):
     return render(request, 'teacher_reports.html', context)
 
 @login_required
+def student_detail_report(request, student_id):
+    student = get_object_or_404(StudentProfile, id=student_id)
+
+    attendance_records = Attendance.objects.filter(student=student).order_by('-date')
+
+    total = attendance_records.count()
+    present = attendance_records.filter(status='PRESENT').count()
+    absent = attendance_records.filter(status='ABSENT').count()
+    late = attendance_records.filter(status='LATE').count()
+
+    percentage = 0
+    if total > 0:
+        percentage = round((present / total) * 100, 2)
+
+    context = {
+        'student': student,
+        'records': attendance_records,
+        'total': total,
+        'present': present,
+        'absent': absent,
+        'late': late,
+        'percentage': percentage,
+    }
+
+    return render(request, 'student_detail_report.html', context)
+
+
+@login_required
 def student_dashboard(request):
 
     user = request.user

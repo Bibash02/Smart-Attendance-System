@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="forgot-password">
-                    <a href="javascript:void(0)" onclick="openForgot()">Forgot password?</a>
+                    <a href="{% url 'password_reset' %}" class="forgot-password/" onclick="openForgot()">Forgot password?</a>
                 </div>
 
                 <button type="submit" class="submit-btn">Sign In</button>
@@ -114,7 +114,7 @@
         <span class="close" onclick="closeForgot()">&times;</span>
         <h2>Reset Password</h2>
 
-        <form method="POST" action="{% url 'forgot_password' %}">
+        <form method="POST" action="{% url 'password_reset' %}" class="forgot-password/">
             {% csrf_token %}
             <div class="form-group">
                 <label>Enter your email</label>
