@@ -4,7 +4,15 @@ from .models import *
 # Register your models here.
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ['id', 'user', 'role', 'phone', 'profile_image']
+    list_display = ['id', 'get_username', 'get_email', 'role', 'phone']
+    search_fields = ['user__username', 'user__email']
+    list_filter = ['role']
+
+    def get_username(self, obj):
+        return obj.user.username
+
+    def get_email(self, obj):
+        return obj.user.email
 
 @admin.register(Grade)
 class GradeAdmin(admin.ModelAdmin):
