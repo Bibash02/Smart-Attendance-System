@@ -845,14 +845,155 @@ def student_dashboard(request):
 
 #     return render(request, 'student_dashboard.html', context)
 
+@login_required
 def student_attendance(request):
-    return render(request, 'student-attendance.html')
+    # Get current student
+    student = get_object_or_404(StudentProfile, user=request.user)
 
-def student_class_schedule(request):
-    return render(request, 'student_class_schedule.html')
+    # Get all groups student is enrolled in
+    groups = ClassGroup.objects.filter(studentprofile__user=request.user)
 
+    # Attendance records
+    attendance_records = []
+    for group in groups:
+        total_classes = Attendance.objects.filter(student=student, group=group).count()
+        present_count = Attendance.objects.filter(student=student, group=group, status="PRESENT").count()
+        absent_count = Attendance.objects.filter(student=student, group=group, status="ABSENT").count()
+        late_count = Attendance.objects.filter(student=student, group=group, status="LATE").count()
+
+        percentage = round((present_count / total_classes) * 100, 1) if total_classes > 0 else 0
+
+        if percentage >= 90:
+            badge_class = "present"
+        elif percentage >= 75:
+            badge_class = "warning"
+        else:
+            badge_class = "late"
+
+        attendance_records.append({
+            "group": group,
+            "teacher": group.teacher.get_full_name(),
+            "total": total_classes,
+            "present": present_count,
+            "absent": absent_count,
+            "late": late_count,
+            "percentage": percentage,
+            "badge_class": badge_class
+        })
+
+    # Stats overview
+    total_classes = sum([r["total"] for r in attendance_records])
+    total_present = sum([r["present"] for r in attendance_records])
+    total_absent = sum([r["absent"] for r in attendance_records])
+    total_late = sum([r["late"] for r in attendance_records])
+    overall_percentage = round((total_present / total_classes) * 100, 1) if total_classes > 0 else 0
+
+    context = {
+        "student": student,
+        "attendance_records": attendance_records,
+        "stats": {
+            "overall_percentage": overall_percentage,
+            "classes_attended": total_present,
+            "total_absences": total_absent,
+            "late_arrivals": total_late,
+        }
+    }
+    return render(request, "student-attendance.html", context)
+
+@login_required
+def student_attendance(request):
+    # Get student profile
+    student = get_object_or_404(StudentProfile, user=request.user)
+
+    # Get all groups the student is enrolled in
+    groups = ClassGroup.objects.filter(studentprofile__user=request.user)
+
+    # Get attendance records
+    attendance_records = Attendance.objects.filter(student=student).select_related('group', 'group__subject', 'group__teacher')
+
+    # Compute statistics
+    total_classes = attendance_records.count()
+    present_count = attendance_records.filter(status='PRESENT').count()
+    absent_count = attendance_records.filter(status='ABSENT').count()
+    late_count = attendance_records.filter(status='LATE').count()
+    overall_attendance = (present_count / total_classes * 100) if total_classes else 0
+
+    # Group-wise summary
+    subject_summary = []
+    for group in groups:
+        group_attendance = attendance_records.filter(group=group)
+        total = group_attendance.count()
+        present = group_attendance.filter(status='PRESENT').count()
+        absent = group_attendance.filter(status='ABSENT').count()
+        late = group_attendance.filter(status='LATE').count()
+        percentage = (present / total * 100) if total else 0
+
+        # Determine status badge
+        if percentage >= 90:
+            status = 'Excellent'
+            badge_class = 'present'
+        elif percentage >= 75:
+            status = 'Good'
+            badge_class = 'present'
+        else:
+            status = 'Low'
+            badge_class = 'late'
+
+        subject_summary.append({
+            'subject_name': group.subject.name,
+            'teacher_name': group.teacher.get_full_name(),
+            'total_classes': total,
+            'present': present,
+            'absent': absent,
+            'late': late,
+            'percentage': round(percentage, 1),
+            'badge_class': badge_class,
+        })
+
+    context = {
+        'student': student,
+        'subject_summary': subject_summary,
+        'overall_attendance': round(overall_attendance, 1),
+        'total_classes': total_classes,
+        'present_count': present_count,
+        'absent_count': absent_count,
+        'late_count': late_count,
+    }
+
+    return render(request, 'student-attendance.html', context)
+    
+@login_required
 def student_mark_attendance(request):
-    return render(request, 'student_mark_attendance.html')
+
+    # Get logged in student
+    student = get_object_or_404(StudentProfile, user=request.user)
+
+    today = date.today()
+
+    # Attendance records for today
+    attendance_today = Attendance.objects.filter(
+        student=student,
+        date=today
+    ).select_related("group", "group__subject", "group__teacher")
+
+    # Groups the student belongs to
+    groups = ClassGroup.objects.filter(
+        studentprofile__user=request.user
+    ).distinct()
+
+    classes_today = groups.count()
+    attended = attendance_today.filter(status="PRESENT").count()
+    remaining = classes_today - attended
+
+    context = {
+        "student": student,
+        "attendance_today": attendance_today,
+        "classes_today": classes_today,
+        "attended": attended,
+        "remaining": remaining
+    }
+
+    return render(request, "student_mark_attendance.html", context)
 
 def student_profile(request):
     user = request.user

@@ -169,114 +169,39 @@
                     </tr>
                 </thead>
                 <tbody>
+                    {% for s in subject_summary %}
                     <tr>
                         <td>
-                            <div class="subject-name">Advanced Mathematics</div>
-                            <div class="teacher-name">Prof. Johnson</div>
+                            <div class="subject-name">{{ s.subject_name }}</div>
+                            <div class="teacher-name">{{ s.teacher_name }}</div>
                         </td>
-                        <td>Prof. Johnson</td>
-                        <td>42</td>
-                        <td>40</td>
-                        <td>2</td>
-                        <td>0</td>
+                        <td>{{ s.teacher_name }}</td>
+                        <td>{{ s.total_classes }}</td>
+                        <td>{{ s.present }}</td>
+                        <td>{{ s.absent }}</td>
+                        <td>{{ s.late }}</td>
                         <td>
-                            <div class="percentage good">95.2%</div>
+                            <div class="percentage {% if s.badge_class == 'late' %}warning{% else %}good{% endif %}">{{ s.percentage }}%</div>
                             <div class="progress-bar">
-                                <div class="progress-fill" style="width: 95.2%;"></div>
+                                <div class="progress-fill" style="width: {{ s.percentage }}%; {% if s.badge_class == 'late' %}background: var(--warning);{% endif %}"></div>
                             </div>
                         </td>
-                        <td><span class="status-badge present">✓ Good</span></td>
+                        <td>
+                            <span class="status-badge {{ s.badge_class }}">
+                                {% if s.badge_class != 'late' %}
+                                    ✓ 
+                                {% else %}
+                                    ⚠ 
+                                {% endif %}
+                                {{ s.badge_class|capfirst }}
+                            </span>
+                        </td>
                     </tr>
+                    {% empty %}
                     <tr>
-                        <td>
-                            <div class="subject-name">Data Structures</div>
-                            <div class="teacher-name">Dr. Williams</div>
-                        </td>
-                        <td>Dr. Williams</td>
-                        <td>38</td>
-                        <td>37</td>
-                        <td>0</td>
-                        <td>1</td>
-                        <td>
-                            <div class="percentage good">97.4%</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 97.4%;"></div>
-                            </div>
-                        </td>
-                        <td><span class="status-badge present">✓ Excellent</span></td>
+                        <td colspan="8" style="text-align: center;">No attendance records available.</td>
                     </tr>
-                    <tr>
-                        <td>
-                            <div class="subject-name">Web Development</div>
-                            <div class="teacher-name">Prof. Anderson</div>
-                        </td>
-                        <td>Prof. Anderson</td>
-                        <td>40</td>
-                        <td>36</td>
-                        <td>3</td>
-                        <td>1</td>
-                        <td>
-                            <div class="percentage good">90.0%</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 90%;"></div>
-                            </div>
-                        </td>
-                        <td><span class="status-badge present">✓ Good</span></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="subject-name">Database Systems</div>
-                            <div class="teacher-name">Dr. Martinez</div>
-                        </td>
-                        <td>Dr. Martinez</td>
-                        <td>35</td>
-                        <td>33</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>
-                            <div class="percentage good">94.3%</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 94.3%;"></div>
-                            </div>
-                        </td>
-                        <td><span class="status-badge present">✓ Good</span></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="subject-name">Physics</div>
-                            <div class="teacher-name">Dr. Thompson</div>
-                        </td>
-                        <td>Dr. Thompson</td>
-                        <td>30</td>
-                        <td>22</td>
-                        <td>6</td>
-                        <td>2</td>
-                        <td>
-                            <div class="percentage warning">73.3%</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 73.3%; background: var(--warning);"></div>
-                            </div>
-                        </td>
-                        <td><span class="status-badge late">⚠ Low</span></td>
-                    </tr>
-                    <tr>
-                        <td>
-                            <div class="subject-name">English Literature</div>
-                            <div class="teacher-name">Prof. Davis</div>
-                        </td>
-                        <td>Prof. Davis</td>
-                        <td>36</td>
-                        <td>34</td>
-                        <td>1</td>
-                        <td>1</td>
-                        <td>
-                            <div class="percentage good">94.4%</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill" style="width: 94.4%;"></div>
-                            </div>
-                        </td>
-                        <td><span class="status-badge present">✓ Good</span></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </div>
