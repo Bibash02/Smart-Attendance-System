@@ -44,6 +44,11 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            📄 Add Assignment
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a href="{% url 'logout' %}" class="nav-link">
                             <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -116,11 +121,9 @@
                 </div>
 
                 <div class="stat-card">
-                    <div class="stat-header">
-                        <div class="stat-icon warning">⏰</div>
-                    </div>
-                    <div class="stat-value">{{pending_today}}</div>
-                    <div class="stat-label">Pending Today</div>
+            <div class="stat-icon primary">📄</div>
+                    <div class="stat-value">{{ total_assignments }}</div>
+                    <div class="stat-label">Assignments</div>
                 </div>
             </div>
 

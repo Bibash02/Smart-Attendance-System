@@ -7,7 +7,7 @@ from django.utils import timezone
 from django.db.models import Count, Q
 from .models import *
 from django.http import JsonResponse
-from .forms import RegisterForm
+from .forms import *
 from django.contrib.auth import login, authenticate, logout
 from .utils import redirect_user_by_role
 from django.views.decorators.csrf import csrf_exempt
@@ -900,67 +900,67 @@ def student_attendance(request):
     }
     return render(request, "student-attendance.html", context)
 
-@login_required
-def student_attendance(request):
-    # Get student profile
-    student = get_object_or_404(StudentProfile, user=request.user)
+# @login_required
+# def student_attendance(request):
+#     # Get student profile
+#     student = get_object_or_404(StudentProfile, user=request.user)
 
-    # Get all groups the student is enrolled in
-    groups = ClassGroup.objects.filter(studentprofile__user=request.user)
+#     # Get all groups the student is enrolled in
+#     groups = ClassGroup.objects.filter(studentprofile__user=request.user)
 
-    # Get attendance records
-    attendance_records = Attendance.objects.filter(student=student).select_related('group', 'group__subject', 'group__teacher')
+#     # Get attendance records
+#     attendance_records = Attendance.objects.filter(student=student).select_related('group', 'group__subject', 'group__teacher')
 
-    # Compute statistics
-    total_classes = attendance_records.count()
-    present_count = attendance_records.filter(status='PRESENT').count()
-    absent_count = attendance_records.filter(status='ABSENT').count()
-    late_count = attendance_records.filter(status='LATE').count()
-    overall_attendance = (present_count / total_classes * 100) if total_classes else 0
+#     # Compute statistics
+#     total_classes = attendance_records.count()
+#     present_count = attendance_records.filter(status='PRESENT').count()
+#     absent_count = attendance_records.filter(status='ABSENT').count()
+#     late_count = attendance_records.filter(status='LATE').count()
+#     overall_attendance = (present_count / total_classes * 100) if total_classes else 0
 
-    # Group-wise summary
-    subject_summary = []
-    for group in groups:
-        group_attendance = attendance_records.filter(group=group)
-        total = group_attendance.count()
-        present = group_attendance.filter(status='PRESENT').count()
-        absent = group_attendance.filter(status='ABSENT').count()
-        late = group_attendance.filter(status='LATE').count()
-        percentage = (present / total * 100) if total else 0
+#     # Group-wise summary
+#     subject_summary = []
+#     for group in groups:
+#         group_attendance = attendance_records.filter(group=group)
+#         total = group_attendance.count()
+#         present = group_attendance.filter(status='PRESENT').count()
+#         absent = group_attendance.filter(status='ABSENT').count()
+#         late = group_attendance.filter(status='LATE').count()
+#         percentage = (present / total * 100) if total else 0
 
-        # Determine status badge
-        if percentage >= 90:
-            status = 'Excellent'
-            badge_class = 'present'
-        elif percentage >= 75:
-            status = 'Good'
-            badge_class = 'present'
-        else:
-            status = 'Low'
-            badge_class = 'late'
+#         # Determine status badge
+#         if percentage >= 90:
+#             status = 'Excellent'
+#             badge_class = 'present'
+#         elif percentage >= 75:
+#             status = 'Good'
+#             badge_class = 'present'
+#         else:
+#             status = 'Low'
+#             badge_class = 'late'
 
-        subject_summary.append({
-            'subject_name': group.subject.name,
-            'teacher_name': group.teacher.get_full_name(),
-            'total_classes': total,
-            'present': present,
-            'absent': absent,
-            'late': late,
-            'percentage': round(percentage, 1),
-            'badge_class': badge_class,
-        })
+#         subject_summary.append({
+#             'subject_name': group.subject.name,
+#             'teacher_name': group.teacher.get_full_name(),
+#             'total_classes': total,
+#             'present': present,
+#             'absent': absent,
+#             'late': late,
+#             'percentage': round(percentage, 1),
+#             'badge_class': badge_class,
+#         })
 
-    context = {
-        'student': student,
-        'subject_summary': subject_summary,
-        'overall_attendance': round(overall_attendance, 1),
-        'total_classes': total_classes,
-        'present_count': present_count,
-        'absent_count': absent_count,
-        'late_count': late_count,
-    }
+#     context = {
+#         'student': student,
+#         'subject_summary': subject_summary,
+#         'overall_attendance': round(overall_attendance, 1),
+#         'total_classes': total_classes,
+#         'present_count': present_count,
+#         'absent_count': absent_count,
+#         'late_count': late_count,
+#     }
 
-    return render(request, 'student-attendance.html', context)
+#     return render(request, 'student-attendance.html', context)
     
 @login_required
 def student_mark_attendance(request):
@@ -1072,3 +1072,54 @@ def student_profile_edit(request):
         "user": user,
         "profile": profile
     })
+
+def student_class_shedule(request):
+    return render(request, 'student_class_schedule.html')
+
+# def add_assignment(request):
+#     form = AssignmentForm()
+
+#     # filter groups for logged-in teacher
+#     form.fields['class_group'].queryset = ClassGroup.objects.filter(
+#         teacher=request.user
+#     )
+
+#     if request.method == "POST":
+#         form = AssignmentForm(request.POST, request.FILES)
+#         form.fields['class_group'].queryset = ClassGroup.objects.filter(
+#             teacher=request.user
+#         )
+
+#         if form.is_valid():
+#             assignment = form.save(commit=False)
+#             assignment.teacher = request.user
+#             assignment.save()
+#             return redirect('teacher_dashboard')
+
+#     return render(request, 'add_assignment.html', {'form': form})
+
+# def student_assignments(request):
+#     student = request.user.studentprofile
+
+#     assignments = Assignment.objects.filter(
+#         class_group=student.class_group
+#     ).order_by('-created_at')
+
+#     return render(request, 'assignments.html', {
+#         'assignments': assignments
+#     })
+
+# def submit_assignment(request, assignment_id):
+#     assignment = get_object_or_404(Assignment, id=assignment_id)
+#     student = request.user.studentprofile
+
+#     if request.method == "POST":
+#         file = request.FILES.get('file')
+
+#         AssignmentSubmission.objects.update_or_create(
+#             assignment=assignment,
+#             student=student,
+#             defaults={'submitted_file': file}
+#         )
+
+#         return redirect('student_assignments')
