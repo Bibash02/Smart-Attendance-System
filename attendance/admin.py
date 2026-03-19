@@ -63,3 +63,7 @@ class SubjectAdmin(admin.ModelAdmin):
 @admin.register(Attendance)
 class AttendanceAdmin(admin.ModelAdmin):
     list_display = ['id', 'student', 'group', 'date', 'status', 'is_locked', 'created_at']
+
+@admin.register(Assignment)
+class AssignmentAdmin(admin.ModelAdmin):
+    list_display = ['id', 'teacher', 'class_group', 'subject', 'title', 'description', 'due_date', 'file', 'created_at']

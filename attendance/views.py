@@ -235,6 +235,10 @@ def teacher_dashboard(request):
 
     active_groups = classes.count()
 
+    total_assignments = Assignment.objects.filter(
+        teacher = teacher
+    ).count()
+
     total_students = StudentEnrollment.objects.filter(
         class_group__in = classes
     ).values('student').distinct().count()
@@ -277,7 +281,8 @@ def teacher_dashboard(request):
         'teacher': request.user,
         'profile': request.user.userprofile,
         'now': now(),
-        'today_classes': today_classes
+        'today_classes': today_classes,
+        'total_assignments': total_assignments,
     }
 
     return render(request, 'teacher_dashboard.html', context)
@@ -1076,27 +1081,28 @@ def student_profile_edit(request):
 def student_class_shedule(request):
     return render(request, 'student_class_schedule.html')
 
-# def add_assignment(request):
-#     form = AssignmentForm()
+def add_assignment(request):
+    form = AssignmentForm()
 
-#     # filter groups for logged-in teacher
-#     form.fields['class_group'].queryset = ClassGroup.objects.filter(
-#         teacher=request.user
-#     )
+    # filter groups for logged-in teacher
+    form.fields['class_group'].queryset = ClassGroup.objects.filter(
+        teacher=request.user
+    )
 
-#     if request.method == "POST":
-#         form = AssignmentForm(request.POST, request.FILES)
-#         form.fields['class_group'].queryset = ClassGroup.objects.filter(
-#             teacher=request.user
-#         )
+    if request.method == "POST":
+        form = AssignmentForm(request.POST, request.FILES)
+        form.fields['class_group'].queryset = ClassGroup.objects.filter(
+            teacher=request.user
+        )
+        form.fields['subject'].queryset = Subject.objects.all()
 
-#         if form.is_valid():
-#             assignment = form.save(commit=False)
-#             assignment.teacher = request.user
-#             assignment.save()
-#             return redirect('teacher_dashboard')
+        if form.is_valid():
+            assignment = form.save(commit=False)
+            assignment.teacher = request.user
+            assignment.save()
+            return redirect('teacher_dashboard')
 
-#     return render(request, 'add_assignment.html', {'form': form})
+    return render(request, 'add_assignment.html', {'form': form})
 
 # def student_assignments(request):
 #     student = request.user.studentprofile

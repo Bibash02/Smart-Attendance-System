@@ -30,7 +30,7 @@ urlpatterns = [
     path('teacher/group/list', group_list, name='group_list'),
     # path('teacher/add-student/<int:group_id>/', add_student_to_group, name='add_student_to_group'),
     path('teacher/report/<int:group_id>/', attendance_report, name='report'),
-    # path('teacher/add-assignment/', add_assignment, name='add_assignment'),
+    path('teacher/add-assignment/', add_assignment, name='add_assignment'),
 
     path('student/dashboard', student_dashboard, name='student_dashboard'),
     path('student/attendance', student_attendance, name='student_attendance'),
