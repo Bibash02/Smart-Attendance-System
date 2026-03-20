@@ -272,6 +272,8 @@ def teacher_dashboard(request):
         id__in=classes_with_attendance
     ).count()
 
+    today_assignments = Assignment.objects.filter(teacher = request.user).order_by('-created_at')
+
     context = {
         'active_groups': active_groups,
         'total_students': total_students,
@@ -283,9 +285,29 @@ def teacher_dashboard(request):
         'now': now(),
         'today_classes': today_classes,
         'total_assignments': total_assignments,
+        'today_assignments': today_assignments,
     }
 
     return render(request, 'teacher_dashboard.html', context)
+
+def edit_assignment(request, id):
+    assignment = get_object_or_404(Assignment, id=id, teacher=request.user)
+
+    form = AssignmentForm(instance=assignment)
+
+    if request.method == "POST":
+        form = AssignmentForm(request.POST, request.FILES, instance=assignment)
+        if form.is_valid():
+            form.save()
+            return redirect('teacher_dashboard')
+
+    return render(request, 'add_assignment.html', {'form': form})
+
+# DELETE
+def delete_assignment(request, id):
+    assignment = get_object_or_404(Assignment, id=id, teacher=request.user)
+    assignment.delete()
+    return redirect('teacher_dashboard')
 
 def create_attendace_session(request, class_id):
     class_group = get_object_or_404(

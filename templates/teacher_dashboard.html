@@ -161,46 +161,41 @@
             <!-- Today's Groups -->
             <div class="groups-section">
                 <div class="section-header">
-                    <h3>Today's Classes</h3>
+                    <h3>📄 Today's Assignments</h3>
                 </div>
 
-                {% for item in today_classes %}
+                {% for assignment in today_assignments %}
                 <div class="group-card">
                     <div class="group-header">
+
                         <div class="group-info">
-                            <h4>
-                                {{ item.group.subject.name }} - {{ item.group.grade.name }}
-                            </h4>
+                            <h4>{{ assignment.title }}</h4>
                             <div class="group-meta">
-                                <span>👥 {{ item.student_count }} Students</span>
-                                {% if item.group.start_time and item.group.end_time %}
-                                    <span>🕐 {{ item.group.start_time }} - {{ item.group.end_time }}</span>
-                                {% endif %}
+                                <span>📚 {{ assignment.class_group.name }}</span>
+                                <span>📖 {{ assignment.subject.name }}</span>
+                                <span>📅 Due: {{ assignment.due_date }}</span>
                             </div>
                         </div>
 
-                        <span class="badge {% if item.status == 'Completed' %}completed{% else %}pending{% endif %}">
-                            {{ item.status }}
-                        </span>
+                        <!-- ACTION BUTTONS -->
+                        <div style="display:flex; gap:10px;">
+                            <a href="{% url 'edit_assignment' assignment.id %}" class="badge pending">
+                                ✏ Edit
+                            </a>
+                            <a href="{% url 'delete_assignment' assignment.id %}" class="badge completed">
+                                🗑 Delete
+                            </a>
+                        </div>
+
                     </div>
 
-                    <div class="attendance-progress">
-                        <div class="progress-label">
-                            <span style="color: var(--text-secondary)">
-                                This Week's Attendance
-                            </span>
-                            <span style="font-weight: 600">
-                                {{ item.percentage }}%
-                            </span>
-                        </div>
-
-                        <div class="progress-bar">
-                            <div class="progress-fill" style="width: {{ item.percentage }}%"></div>
-                        </div>
+                    <div style="margin-top:10px; color: var(--text-secondary);">
+                        {{ assignment.description|truncatewords:15 }}
                     </div>
                 </div>
+
                 {% empty %}
-                <p style="color: var(--text-secondary)">No classes assigned today.</p>
+                <p style="color: var(--text-secondary)">No assignments due today.</p>
                 {% endfor %}
             </div>
         </main>
