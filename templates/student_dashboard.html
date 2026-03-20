@@ -100,24 +100,50 @@
             <!-- Today's Classes -->
             <div class="card">
                 <div class="card-header">
-                    <h2 class="card-title">Today's Schedule</h2>
+                    <h2 class="card-title">Today's Schedule & Assignments</h2>
                     <a href="{% url 'student_class_shedule' %}" class="view-all">View Full Schedule</a>
                 </div>
 
+                <!-- 📚 CLASS (your existing dynamic data later) -->
                 <div class="class-item">
                     <div class="class-time">⏰ 08:00 - 09:30</div>
-                    <div class="class-name">Advanced Mathematics</div>
-                    <div class="class-teacher">Prof. Johnson</div>
-                    <span class="class-status present">✓ Present</span>
+                    <div class="class-name">{{ student.class_group.subject.name }}</div>
+                    <div class="class-teacher">{{ student.class_group.teacher.get_full_name }}</div>
+                    <span class="class-status upcoming">📚 Class</span>
                 </div>
 
+                <!-- 📄 ASSIGNMENTS -->
+                {% for assignment in today_assignments %}
                 <div class="class-item">
-                    <div class="class-time">⏰ 13:00 - 14:30</div>
-                    <div class="class-name">Web Development</div>
-                    <div class="class-teacher">Prof. Anderson</div>
-                    <span class="class-status upcoming">⏳ Upcoming</span>
-                </div>
 
+                    <div>
+                        <div class="class-time">📅 Due: {{ assignment.due_date }}</div>
+                        <div class="class-name">📄 {{ assignment.title }}</div>
+                        <div class="class-teacher">📖 {{ assignment.subject.name }}</div>
+                    </div>
+
+                    <!-- 🔥 RIGHT SIDE -->
+                    <div style="display:flex; align-items:center; gap:10px;">
+
+                        <!-- STATUS -->
+                        {% if assignment.id in submitted_ids %}
+                            <span class="class-status present">✓ Submitted</span>
+                        {% else %}
+                            <span class="class-status upcoming">⏳ Pending</span>
+                        {% endif %}
+
+                        <!-- BUTTON -->
+                        <a href="{% url 'submit_assignment' assignment.id %}" class="action-btn">
+                            📤 Submit
+                        </a>
+
+                    </div>
+
+                </div>
+                {% empty %}
+                <p style="color: gray;">No assignments available</p>
+                {% endfor %}
+                
                 <div class="quick-actions">
                     <a href="{% url 'student_mark_attendance' %}" class="action-btn">📸 Mark Attendance</a>
                     <a href="{% url 'student_attendance' %}" class="action-btn secondary">📋 View Records</a>

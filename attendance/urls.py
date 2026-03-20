@@ -41,4 +41,6 @@ urlpatterns = [
     path('student/profile', student_profile, name='student_profile'),
     path('student/profile/edit', student_profile_edit, name='student_profile_edit'),
     path('student/class/shedule', student_class_shedule, name='student_class_shedule'),
+
+    path('student/submit-assignment/<int:id>/', submit_assignment, name='submit_assignment'),
 ]

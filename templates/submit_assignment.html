@@ -1,0 +1,31 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Assignment</title>
+    <link rel="stylesheet" href="{% static 'css/student.css' %}">
+</head>
+<body>
+
+<div class="container">
+    <h2>📄 Submit Assignment</h2>
+
+    <p><strong>{{ assignment.title }}</strong></p>
+    <p>📅 Due: {{ assignment.due_date }}</p>
+
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <input type="file" name="file" required>
+
+        <button type="submit" class="action-btn">
+            🚀 Submit Assignment
+        </button>
+    </form>
+
+    <br>
+    <a href="{% url 'student_dashboard' %}">⬅ Back</a>
+</div>
+
+</body>
+</html>

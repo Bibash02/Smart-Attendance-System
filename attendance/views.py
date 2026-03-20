@@ -802,6 +802,19 @@ def student_dashboard(request):
     ).exists():
         streak += 1
         check_date -= timedelta(days=1)
+    
+    assignments = Assignment.objects.filter(
+        class_group=student.class_group
+    ).order_by('due_date')
+    
+    # today_assignments = Assignment.objects.filter(
+    #     class_group=student.class_group,
+    #     due_date__gte=today   # today + upcoming
+    # ).order_by('due_date')
+
+    submitted_ids = AssignmentSubmission.objects.filter(
+        student=student
+    ).values_list('assignment_id', flat=True)
 
     context = {
         'student': student,
@@ -810,9 +823,30 @@ def student_dashboard(request):
         'total_classes': total_classes,
         'attendance_percentage': attendance_percentage,
         'streak': streak,
+        'today_assignments': assignments,
+        'submitted_ids': list(submitted_ids),
     }
 
     return render(request, 'student_dashboard.html', context)
+
+def submit_assignment(request, id):
+    assignment = get_object_or_404(Assignment, id=id)
+    student = request.user.studentprofile
+
+    if request.method == "POST":
+        file = request.FILES.get('file')
+
+        AssignmentSubmission.objects.update_or_create(
+            assignment=assignment,
+            student=student,
+            defaults={'submitted_file': file}
+        )
+
+        return redirect('student_dashboard')
+
+    return render(request, 'submit_assignment.html', {
+        'assignment': assignment
+    })
 
 # def redirect_dashboard(request):
 #     user = request.user
