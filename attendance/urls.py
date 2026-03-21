@@ -31,8 +31,9 @@ urlpatterns = [
     # path('teacher/add-student/<int:group_id>/', add_student_to_group, name='add_student_to_group'),
     path('teacher/report/<int:group_id>/', attendance_report, name='report'),
     path('teacher/add-assignment/', add_assignment, name='add_assignment'),
-    path('assignment/edit/<int:id>/', edit_assignment, name='edit_assignment'),
-    path('assignment/delete/<int:id>/', delete_assignment, name='delete_assignment'),
+    path('teacher/assignment/edit/<int:id>/', edit_assignment, name='edit_assignment'),
+    path('teacher/assignment/delete/<int:id>/', delete_assignment, name='delete_assignment'),
+    path('teacher/assignment/submissions/<int:assignment_id>', view_submission, name='view_submissions'),
 
     path('student/dashboard', student_dashboard, name='student_dashboard'),
     path('student/attendance', student_attendance, name='student_attendance'),

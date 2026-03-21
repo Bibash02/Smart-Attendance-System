@@ -67,3 +67,7 @@ class AttendanceAdmin(admin.ModelAdmin):
 @admin.register(Assignment)
 class AssignmentAdmin(admin.ModelAdmin):
     list_display = ['id', 'teacher', 'class_group', 'subject', 'title', 'description', 'due_date', 'file', 'created_at']
+
+@admin.register(AssignmentSubmission)
+class AssignmentSubmissionAdmin(admin.ModelAdmin):
+    list_display = ['id', 'assignment', 'student', 'submitted_file', 'submitted_at', 'marks', 'feedback']

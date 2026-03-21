@@ -848,6 +848,28 @@ def submit_assignment(request, id):
         'assignment': assignment
     })
 
+def view_submission(request, assignment_id):
+    assignment = get_object_or_404(Assignment, id = assignment_id, teacher = request.user)
+
+    submissions = AssignmentSubmission.objects.filter(assignment = assignment).select_related('student__user')
+
+    if request.method == "POST":
+        submission_id = request.POST.get('submission_id')
+        marks = request.POST.get('marks')
+        feedback = request.POST.get('feedback')
+
+        submission = AssignmentSubmission.objects.get(id = submission_id)
+        submission.marks = marks
+        submission.feedback = feedback
+        submission.save()
+
+        return redirect('view_submissions', assignment_id = assignment_id)
+    
+    return render(request, 'view_submissions.html', {
+        'assignment': assignment,
+        'submissions': submissions
+    })
+
 # def redirect_dashboard(request):
 #     user = request.user
 

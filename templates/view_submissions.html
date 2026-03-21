@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Submissions</title>
+    <link rel="stylesheet" href="{% static 'css/teacher.css' %}">
+
+    <style>
+        .submission-card {
+            background: #fff;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .submission-header {
+            display:flex;
+            justify-content:space-between;
+            align-items:center;
+        }
+
+        .form-inline {
+            display:flex;
+            gap:10px;
+            margin-top:10px;
+        }
+
+        input, textarea {
+            padding:8px;
+            border-radius:6px;
+            border:1px solid #ddd;
+        }
+
+        button {
+            background:#4f46e5;
+            color:white;
+            padding:8px 12px;
+            border:none;
+            border-radius:6px;
+            cursor:pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>📄 {{ assignment.title }} - Submissions</h2>
+
+    {% for sub in submissions %}
+    <div class="submission-card">
+
+        <div class="submission-header">
+            <div>
+                <h4>{{ sub.student.user.get_full_name }}</h4>
+                <p>Submitted: {{ sub.submitted_at }}</p>
+            </div>
+
+            <a href="{{ sub.submitted_file.url }}" target="_blank" class="action-btn">
+                📥 Download
+            </a>
+        </div>
+
+        <!-- FEEDBACK FORM -->
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="submission_id" value="{{ sub.id }}">
+
+            <div class="form-inline">
+                <input type="number" name="marks" placeholder="Marks"
+                       value="{{ sub.marks }}">
+
+                <textarea name="feedback" placeholder="Feedback">{{ sub.feedback }}</textarea>
+
+                <button type="submit">💾 Save</button>
+            </div>
+        </form>
+
+    </div>
+
+    {% empty %}
+    <p>No submissions yet.</p>
+    {% endfor %}
+
+    <br>
+    <a href="{% url 'teacher_dashboard' %}">⬅ Back</a>
+</div>
+
+</body>
+</html>
