@@ -798,6 +798,7 @@ def student_dashboard(request):
     student = user.studentprofile
     today = now().date()
 
+    # Attendance Logic
     first_day = today.replace(day=1)
     last_day = today.replace(day=monthrange(today.year, today.month)[1])
 
@@ -815,29 +816,20 @@ def student_dashboard(request):
         if total_classes > 0 else 0
     )
 
-    streak = 0
-    check_date = today
-
-    while Attendance.objects.filter(
-        student=student,
-        date=check_date,
-        status='PRESENT'
-    ).exists():
-        streak += 1
-        check_date -= timedelta(days=1)
-    
+    # Assignments
     assignments = Assignment.objects.filter(
         class_group=student.class_group
     ).order_by('due_date')
-    
-    # today_assignments = Assignment.objects.filter(
-    #     class_group=student.class_group,
-    #     due_date__gte=today   # today + upcoming
-    # ).order_by('due_date')
 
+    # Submitted assignments
     submitted_ids = AssignmentSubmission.objects.filter(
         student=student
     ).values_list('assignment_id', flat=True)
+
+    # Pending assignments (THIS IS WHAT YOU WANT)
+    streak = assignments.exclude(
+        id__in=submitted_ids
+    ).count()
 
     context = {
         'student': student,
@@ -845,7 +837,7 @@ def student_dashboard(request):
         'total_absent': total_absent,
         'total_classes': total_classes,
         'attendance_percentage': attendance_percentage,
-        'streak': streak,
+        'streak': streak, 
         'today_assignments': assignments,
         'submitted_ids': list(submitted_ids),
     }
