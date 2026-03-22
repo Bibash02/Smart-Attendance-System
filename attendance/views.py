@@ -1,5 +1,8 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.utils.timezone import now
@@ -117,22 +120,40 @@ def auth(request):
 
 def register_view(request):
     if request.method == "POST":
-        name = request.POST.get("name")
-        email = request.POST.get("email")
+        name = request.POST.get("name", "").strip()
+        email = request.POST.get("email", "").strip()
         role = request.POST.get("role")
         password = request.POST.get("password")
         confirm = request.POST.get("confirm_password")
 
+        # 🔹 Empty fields check
+        if not name or not email or not password or not confirm:
+            messages.error(request, "All fields are required")
+            return redirect('signin')
+
+        # 🔹 Email validation
+        try:
+            validate_email(email)
+        except ValidationError:
+            messages.error(request, "Invalid email format")
+            return redirect('signin')
+
+        # 🔹 Password match check
         if password != confirm:
-            return render(request, 'signin.html', {
-                "reg_error": "Passwords do not match"
-            })
+            messages.error(request, "Passwords do not match")
+            return redirect('signin')
 
+        # 🔹 Simple password length validation
+        if len(password) < 6:
+            messages.error(request, "Password must be at least 6 characters")
+            return redirect('signin')
+
+        # 🔹 Email uniqueness check
         if User.objects.filter(email=email).exists():
-            return render(request, 'signin.html', {
-                "reg_error": "Email already exists"
-            })
+            messages.error(request, "Email already registered")
+            return redirect('signin')
 
+        # 🔹 Create user
         user = User.objects.create_user(
             username=email,
             email=email,
@@ -140,11 +161,13 @@ def register_view(request):
             first_name=name
         )
 
+        # 🔹 Create profile
         UserProfile.objects.create(
             user=user,
             role=role
         )
 
+        messages.success(request, "Registration successful! Please login.")
         return redirect('signin')
 
     return redirect('signin')
