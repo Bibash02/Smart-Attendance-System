@@ -32,3 +32,15 @@ class AssignmentForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
             'file': forms.FileInput(attrs={'class': 'form-control'}),
         }
+    
+    def clean_file(self):
+        file = self.cleaned_data.get('file', False)
+
+        if file:
+            # Only allow PDF
+            if not file.name.lower().endswith('.pdf'):
+                raise forms.ValidationError("Only PDF files are allowed.")
+            # Optional: limit file size (5MB)
+            if file.size > 5 * 1024 * 1024:
+                raise forms.ValidationError("File size must be under 5MB.")
+        return file

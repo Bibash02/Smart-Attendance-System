@@ -818,8 +818,9 @@ def student_dashboard(request):
 
     # Assignments
     assignments = Assignment.objects.filter(
-        class_group=student.class_group
-    ).order_by('due_date')[:3]
+        class_group=student.class_group,
+        due_date__gte = today
+    ).order_by('due_date')
 
     # Submitted assignments
     submitted_ids = AssignmentSubmission.objects.filter(
@@ -830,6 +831,8 @@ def student_dashboard(request):
     streak = assignments.exclude(
         id__in=submitted_ids
     ).count()
+
+    assignments = assignments[:3]
 
     context = {
         'student': student,
@@ -851,13 +854,22 @@ def submit_assignment(request, id):
     if request.method == "POST":
         file = request.FILES.get('file')
 
-        AssignmentSubmission.objects.update_or_create(
-            assignment=assignment,
-            student=student,
-            defaults={'submitted_file': file}
-        )
-
-        return redirect('student_dashboard')
+        # ✅ VALIDATE FILE TYPE
+        if not file:
+            messages.error(request, "Please upload a file.")
+        elif not file.name.lower().endswith('.pdf'):
+            messages.error(request, "Only PDF files are allowed.")
+        elif file.size > 5 * 1024 * 1024:  # Optional: limit size to 5MB
+            messages.error(request, "File size must be under 5MB.")
+        else:
+            # Save submission
+            AssignmentSubmission.objects.update_or_create(
+                assignment=assignment,
+                student=student,
+                defaults={'submitted_file': file}
+            )
+            messages.success(request, "Assignment submitted successfully!")
+            return redirect('student_dashboard')
 
     return render(request, 'submit_assignment.html', {
         'assignment': assignment
@@ -1175,13 +1187,13 @@ def student_profile_edit(request):
 def student_class_shedule(request):
     user = request.user
 
-    # ✅ Check if student profile exists
+    # Check if student profile exists
     if not hasattr(user, 'studentprofile'):
         return redirect('login')
 
     student = user.studentprofile
 
-    # ✅ Safety: check class group assigned
+    # Safety: check class group assigned
     if not student.class_group:
         return render(request, 'student_class_schedule.html', {
             'assignments': [],
@@ -1189,20 +1201,21 @@ def student_class_shedule(request):
             'error': "No class group assigned to you."
         })
 
-    # ✅ FIXED FILTER (using _id)
+    # All assignments for the student's class
     assignments = Assignment.objects.filter(
         class_group_id=student.class_group_id,
         class_group__is_active=True
-    ).select_related('subject', 'teacher').order_by('due_date')
+    ).select_related('subject', 'teacher').order_by('-created_at')
 
-    # ✅ Submitted assignments
+    # Submitted assignments
     submitted_ids = AssignmentSubmission.objects.filter(
         student=student
     ).values_list('assignment_id', flat=True)
 
     context = {
         'assignments': assignments,
-        'submitted_ids': list(submitted_ids)
+        'submitted_ids': list(submitted_ids),
+        'today': now().date()  # Pass today to template
     }
 
     return render(request, 'student_class_schedule.html', context)

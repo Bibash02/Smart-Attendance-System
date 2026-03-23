@@ -13,7 +13,7 @@
         <!-- Header -->
         <div class="page-header">
             <a href="{% url 'student_dashboard' %}" class="back-link">← Back to Dashboard</a>
-            <h1>📅 My Class Schedule</h1>
+            <h1>📅 My Class Tasks</h1>
             <p class="header-subtitle">Plan your week and stay organized</p>
         </div>
 
@@ -70,17 +70,17 @@
                             {% if assignment.id in submitted_ids %}
                                 <span class="status-badge completed">✓ Submitted</span>
                             {% else %}
-                                <span class="status-badge ongoing">⏳ Pending</span>
+                                {% if assignment.due_date >= today %}
+                                    <span class="status-badge ongoing">⏳ Pending</span>
+                                    <a href="{% url 'submit_assignment' assignment.id %}">📤 Submit</a>
+                                {% else %}
+                                    <span class="status-badge late">❌ Past Due</span>
+                                    <!-- No submit button -->
+                                {% endif %}
                             {% endif %}
 
                             {% if assignment.file %}
                                 <a href="{{ assignment.file.url }}" target="_blank">📥 File</a>
-                            {% endif %}
-
-                            {% if assignment.id not in submitted_ids %}
-                                <a href="{% url 'submit_assignment' assignment.id %}">📤 Submit</a>
-                            {% else %}
-                                <span class="status-badge completed">✔ Done</span>
                             {% endif %}
 
                         </div>
