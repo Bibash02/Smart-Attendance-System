@@ -101,18 +101,10 @@
             <div class="card">
                 <div class="card-header">
                     <h2 class="card-title">Today's Schedule & Assignments</h2>
-                    <a href="{% url 'student_class_shedule' %}" class="view-all">View Full Schedule</a>
+                    <a href="{% url 'student_class_shedule' %}" class="view-all">View Full Tasks</a>
                 </div>
 
-                <!-- 📚 CLASS (your existing dynamic data later) -->
-                <div class="class-item">
-                    <div class="class-time">⏰ 08:00 - 09:30</div>
-                    <div class="class-name">{{ student.class_group.subject.name }}</div>
-                    <div class="class-teacher">{{ student.class_group.teacher.get_full_name }}</div>
-                    <span class="class-status upcoming">📚 Class</span>
-                </div>
-
-                <!-- 📄 ASSIGNMENTS -->
+                <!-- ASSIGNMENTS -->
                 {% for assignment in today_assignments %}
                 <div class="class-item">
 

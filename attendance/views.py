@@ -819,7 +819,7 @@ def student_dashboard(request):
     # Assignments
     assignments = Assignment.objects.filter(
         class_group=student.class_group
-    ).order_by('due_date')
+    ).order_by('due_date')[:3]
 
     # Submitted assignments
     submitted_ids = AssignmentSubmission.objects.filter(
@@ -1171,8 +1171,41 @@ def student_profile_edit(request):
         "profile": profile
     })
 
+@login_required
 def student_class_shedule(request):
-    return render(request, 'student_class_schedule.html')
+    user = request.user
+
+    # ✅ Check if student profile exists
+    if not hasattr(user, 'studentprofile'):
+        return redirect('login')
+
+    student = user.studentprofile
+
+    # ✅ Safety: check class group assigned
+    if not student.class_group:
+        return render(request, 'student_class_schedule.html', {
+            'assignments': [],
+            'submitted_ids': [],
+            'error': "No class group assigned to you."
+        })
+
+    # ✅ FIXED FILTER (using _id)
+    assignments = Assignment.objects.filter(
+        class_group_id=student.class_group_id,
+        class_group__is_active=True
+    ).select_related('subject', 'teacher').order_by('due_date')
+
+    # ✅ Submitted assignments
+    submitted_ids = AssignmentSubmission.objects.filter(
+        student=student
+    ).values_list('assignment_id', flat=True)
+
+    context = {
+        'assignments': assignments,
+        'submitted_ids': list(submitted_ids)
+    }
+
+    return render(request, 'student_class_schedule.html', context)
 
 def add_assignment(request):
     form = AssignmentForm()
