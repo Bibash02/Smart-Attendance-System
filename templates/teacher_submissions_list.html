@@ -1,0 +1,68 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assignment Submissions - {{ assignment.title }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/student_schedule.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="page-header">
+            <a href="{% url 'view_teacher_assignments' %}" class="back-link">← Back to Assignment</a>
+            <h1>📄 Submissions for: {{ assignment.title }}</h1>
+            <p class="header-subtitle">Review student answers and download files</p>
+        </div>
+
+        <!-- Schedule Grid -->
+        <div class="schedule-grid">
+
+            <div class="day-card">
+                <div class="day-header">
+                    <div class="day-name">👨‍🎓 Students</div>
+                    <div class="day-date">Submitted Answers</div>
+                </div>
+
+                <div class="classes-list">
+
+                    {% if submissions %}
+                        {% for sub in submissions %}
+                        <div class="class-item">
+
+                            <div class="time-block">
+                                <div class="time-label">Submitted At</div>
+                                <div class="time-value">{{ sub.submitted_at|date:"M d, Y H:i" }}</div>
+                            </div>
+
+                            <div class="class-details">
+                                <div class="class-name">{{ sub.student.user.get_full_name }}</div>
+                                <div class="class-meta">
+                                    <span>🆔 {{ sub.student.student_id }}</span>
+                                    <span>📚 {{ sub.student.class_group.name }}</span>
+                                </div>
+                            </div>
+
+                            <div class="class-actions">
+                                {% if sub.submitted_file %}
+                                    <a href="{{ sub.submitted_file.url }}" target="_blank">📥 Download Answer</a>
+                                {% else %}
+                                    <span class="status-badge late">❌ No File Submitted</span>
+                                {% endif %}
+                            </div>
+
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p style="text-align:center; color:var(--text-secondary);">No submissions yet.</p>
+                    {% endif %}
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

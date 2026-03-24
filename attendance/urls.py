@@ -33,7 +33,10 @@ urlpatterns = [
     path('teacher/add-assignment/', add_assignment, name='add_assignment'),
     path('teacher/assignment/edit/<int:id>/', edit_assignment, name='edit_assignment'),
     path('teacher/assignment/delete/<int:id>/', delete_assignment, name='delete_assignment'),
-    path('teacher/assignment/submissions/<int:assignment_id>', view_submission, name='view_submissions'),
+    path('teacher/view-assignment', view_teacher_assignments, name='view_teacher_assignments'),
+    # path('teacher/submission/<int:submission_id>/', view_submission, name='view_submission'),
+
+    path('teacher/assignment/<int:assignment_id>/submissions/', view_submissions_list, name='view_submissions_list'),
 
     path('student/dashboard', student_dashboard, name='student_dashboard'),
     path('student/attendance', student_attendance, name='student_attendance'),

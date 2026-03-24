@@ -875,85 +875,27 @@ def submit_assignment(request, id):
         'assignment': assignment
     })
 
-def view_submission(request, assignment_id):
-    assignment = get_object_or_404(Assignment, id = assignment_id, teacher = request.user)
+# def view_submission(request, assignment_id):
+#     assignment = get_object_or_404(Assignment, id = assignment_id, teacher = request.user)
 
-    submissions = AssignmentSubmission.objects.filter(assignment = assignment).select_related('student__user')
+#     submissions = AssignmentSubmission.objects.filter(assignment = assignment).select_related('student__user')
 
-    if request.method == "POST":
-        submission_id = request.POST.get('submission_id')
-        marks = request.POST.get('marks')
-        feedback = request.POST.get('feedback')
+#     if request.method == "POST":
+#         submission_id = request.POST.get('submission_id')
+#         marks = request.POST.get('marks')
+#         feedback = request.POST.get('feedback')
 
-        submission = AssignmentSubmission.objects.get(id = submission_id)
-        submission.marks = marks
-        submission.feedback = feedback
-        submission.save()
+#         submission = AssignmentSubmission.objects.get(id = submission_id)
+#         submission.marks = marks
+#         submission.feedback = feedback
+#         submission.save()
 
-        return redirect('view_submissions', assignment_id = assignment_id)
+#         return redirect('view_submissions', assignment_id = assignment_id)
     
-    return render(request, 'view_submissions.html', {
-        'assignment': assignment,
-        'submissions': submissions
-    })
-
-# def redirect_dashboard(request):
-#     user = request.user
-
-#     if hasattr(user, 'studentprofile'):
-#         return redirect('student_dashboard')
-
-#     elif hasattr(user, 'userprofile'):
-#         return redirect('teacher_dashboard')
-
-#     else:
-#         return redirect('login')
-
-# @login_required
-# def student_dashboard(request):
-#     user = request.user
-
-#     # Ensure the logged-in user has a student profile
-#     try:
-#         student = user.studentprofile
-#     except StudentProfile.DoesNotExist:
-#         messages.error(request, "You are not registered as a student.")
-#         return redirect('auth_page')  # or login page
-
-#     profile = user.userprofile
-
-#     today = now().date()
-#     # Get first and last day of current month
-#     first_day = today.replace(day=1)
-#     last_day = today.replace(day=monthrange(today.year, today.month)[1])
-
-#     # Fetch monthly attendance
-#     monthly_attendance = Attendance.objects.filter(
-#         student=student,
-#         date__range=[first_day, last_day]
-#     )
-
-#     total_present = monthly_attendance.filter(status='PRESENT').count()
-#     total_absent = monthly_attendance.filter(status='ABSENT').count()
-#     total_classes = monthly_attendance.count()
-
-#     # Calculate attendance streak (consecutive present days up to today)
-#     streak = 0
-#     check_date = today
-#     while Attendance.objects.filter(student=student, date=check_date, status='PRESENT').exists():
-#         streak += 1
-#         check_date -= timedelta(days=1)
-
-#     context = {
-#         'user': user,
-#         'profile': profile,
-#         'total_present': total_present,
-#         'total_absent': total_absent,
-#         'total_classes': total_classes,
-#         'streak': streak,
-#     }
-
-#     return render(request, 'student_dashboard.html', context)
+#     return render(request, 'view_submissions.html', {
+#         'assignment': assignment,
+#         'submissions': submissions
+#     })
 
 @login_required
 def student_attendance(request):
@@ -1010,68 +952,6 @@ def student_attendance(request):
     }
     return render(request, "student-attendance.html", context)
 
-# @login_required
-# def student_attendance(request):
-#     # Get student profile
-#     student = get_object_or_404(StudentProfile, user=request.user)
-
-#     # Get all groups the student is enrolled in
-#     groups = ClassGroup.objects.filter(studentprofile__user=request.user)
-
-#     # Get attendance records
-#     attendance_records = Attendance.objects.filter(student=student).select_related('group', 'group__subject', 'group__teacher')
-
-#     # Compute statistics
-#     total_classes = attendance_records.count()
-#     present_count = attendance_records.filter(status='PRESENT').count()
-#     absent_count = attendance_records.filter(status='ABSENT').count()
-#     late_count = attendance_records.filter(status='LATE').count()
-#     overall_attendance = (present_count / total_classes * 100) if total_classes else 0
-
-#     # Group-wise summary
-#     subject_summary = []
-#     for group in groups:
-#         group_attendance = attendance_records.filter(group=group)
-#         total = group_attendance.count()
-#         present = group_attendance.filter(status='PRESENT').count()
-#         absent = group_attendance.filter(status='ABSENT').count()
-#         late = group_attendance.filter(status='LATE').count()
-#         percentage = (present / total * 100) if total else 0
-
-#         # Determine status badge
-#         if percentage >= 90:
-#             status = 'Excellent'
-#             badge_class = 'present'
-#         elif percentage >= 75:
-#             status = 'Good'
-#             badge_class = 'present'
-#         else:
-#             status = 'Low'
-#             badge_class = 'late'
-
-#         subject_summary.append({
-#             'subject_name': group.subject.name,
-#             'teacher_name': group.teacher.get_full_name(),
-#             'total_classes': total,
-#             'present': present,
-#             'absent': absent,
-#             'late': late,
-#             'percentage': round(percentage, 1),
-#             'badge_class': badge_class,
-#         })
-
-#     context = {
-#         'student': student,
-#         'subject_summary': subject_summary,
-#         'overall_attendance': round(overall_attendance, 1),
-#         'total_classes': total_classes,
-#         'present_count': present_count,
-#         'absent_count': absent_count,
-#         'late_count': late_count,
-#     }
-
-#     return render(request, 'student-attendance.html', context)
-    
 @login_required
 def student_mark_attendance(request):
 
@@ -1243,28 +1123,39 @@ def add_assignment(request):
 
     return render(request, 'add_assignment.html', {'form': form})
 
-# def student_assignments(request):
-#     student = request.user.studentprofile
+@login_required
+def view_teacher_assignments(request):
+    teacher = request.user
 
-#     assignments = Assignment.objects.filter(
-#         class_group=student.class_group
-#     ).order_by('-created_at')
+    # Get all assignments created by this teacher
+    assignments = Assignment.objects.filter(teacher=teacher).order_by('-created_at')  # Latest first
 
-#     return render(request, 'assignments.html', {
-#         'assignments': assignments
-#     })
+    # Optionally, fetch number of submissions for each assignment
+    assignments_with_submissions = []
+    for assignment in assignments:
+        submissions_count = AssignmentSubmission.objects.filter(assignment=assignment).count()
+        assignments_with_submissions.append({
+            'assignment': assignment,
+            'submissions_count': submissions_count
+        })
 
-# def submit_assignment(request, assignment_id):
-#     assignment = get_object_or_404(Assignment, id=assignment_id)
-#     student = request.user.studentprofile
+    context = {
+        'assignments_with_submissions': assignments_with_submissions,
+    }
 
-#     if request.method == "POST":
-#         file = request.FILES.get('file')
+    return render(request, 'view_teacher_assignments.html', context)
 
-#         AssignmentSubmission.objects.update_or_create(
-#             assignment=assignment,
-#             student=student,
-#             defaults={'submitted_file': file}
-#         )
+def view_submissions_list(request, assignment_id):
+    # Get assignment
+    assignment = get_object_or_404(Assignment, id=assignment_id)
 
-#         return redirect('student_assignments')
+    # Fetch all submissions for this assignment
+    submissions = AssignmentSubmission.objects.filter(
+        assignment=assignment
+    ).select_related('student', 'student__user').order_by('-submitted_at')  # latest first
+
+    context = {
+        'assignment': assignment,
+        'submissions': submissions
+    }
+    return render(request, 'teacher_submissions_list.html', context)

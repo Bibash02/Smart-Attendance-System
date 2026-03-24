@@ -72,7 +72,7 @@
                             {% else %}
                                 {% if assignment.due_date >= today %}
                                     <span class="status-badge ongoing">⏳ Pending</span>
-                                    <a href="{% url 'submit_assignment' assignment.id %}">📤 Submit</a>
+                                    <a href="{% url 'submit_assignment' assignment.id %}">📤 Answer Submit</a>
                                 {% else %}
                                     <span class="status-badge late">❌ Past Due</span>
                                     <!-- No submit button -->
@@ -80,7 +80,7 @@
                             {% endif %}
 
                             {% if assignment.file %}
-                                <a href="{{ assignment.file.url }}" target="_blank">📥 File</a>
+                                <a href="{{ assignment.file.url }}" target="_blank">📥 Question File</a>
                             {% endif %}
 
                         </div>
