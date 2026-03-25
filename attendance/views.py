@@ -1169,13 +1169,32 @@ def add_assignment(request):
 def view_teacher_assignments(request):
     teacher = request.user
 
-    # Get all assignments created by this teacher
-    assignments = Assignment.objects.filter(teacher=teacher).order_by('-created_at')  # Latest first
+    # -------- WEEK LOGIC -------- #
+    week_offset = int(request.GET.get('week_offset', 0))
+    today = now().date()
 
-    # Optionally, fetch number of submissions for each assignment
+    # Start of current week (Monday)
+    start_of_week = today - timedelta(days=today.weekday())
+
+    # Apply offset
+    start_of_week = start_of_week + timedelta(weeks=week_offset)
+
+    # End of week (Sunday)
+    end_of_week = start_of_week + timedelta(days=6)
+
+    # -------- FETCH ASSIGNMENTS -------- #
+    assignments = Assignment.objects.filter(
+        teacher=teacher,
+        created_at__date__range=[start_of_week, end_of_week]
+    ).order_by('-created_at')
+
+    # -------- SUBMISSION COUNT -------- #
     assignments_with_submissions = []
     for assignment in assignments:
-        submissions_count = AssignmentSubmission.objects.filter(assignment=assignment).count()
+        submissions_count = AssignmentSubmission.objects.filter(
+            assignment=assignment
+        ).count()
+
         assignments_with_submissions.append({
             'assignment': assignment,
             'submissions_count': submissions_count
@@ -1183,21 +1202,45 @@ def view_teacher_assignments(request):
 
     context = {
         'assignments_with_submissions': assignments_with_submissions,
+        'start_of_week': start_of_week,
+        'end_of_week': end_of_week,
+        'week_offset': week_offset,
     }
 
     return render(request, 'view_teacher_assignments.html', context)
 
+@login_required
 def view_submissions_list(request, assignment_id):
     # Get assignment
     assignment = get_object_or_404(Assignment, id=assignment_id)
 
-    # Fetch all submissions for this assignment
+    # -------- WEEK LOGIC -------- #
+    week_offset = int(request.GET.get('week_offset', 0))
+    today = now().date()
+
+    # Start of week (Monday)
+    start_of_week = today - timedelta(days=today.weekday())
+    start_of_week = start_of_week + timedelta(weeks=week_offset)
+
+    # End of week (Sunday)
+    end_of_week = start_of_week + timedelta(days=6)
+
+    # -------- FILTER SUBMISSIONS -------- #
     submissions = AssignmentSubmission.objects.filter(
-        assignment=assignment
-    ).select_related('student', 'student__user').order_by('-submitted_at')  # latest first
+        assignment=assignment,
+        submitted_at__date__range=[start_of_week, end_of_week]
+    ).select_related(
+        'student', 'student__user'
+    ).order_by('-submitted_at')
 
     context = {
         'assignment': assignment,
-        'submissions': submissions
+        'submissions': submissions,
+
+        # Week data
+        'start_of_week': start_of_week,
+        'end_of_week': end_of_week,
+        'week_offset': week_offset,
     }
+
     return render(request, 'teacher_submissions_list.html', context)

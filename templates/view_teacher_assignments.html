@@ -16,6 +16,23 @@
             <p class="header-subtitle">Click an assignment to view student submissions</p>
         </div>
 
+        <div class="week-nav">
+            <a href="?week_offset={{ week_offset|add:"-1" }}" class="nav-btn">
+                ← Previous Week
+            </a>
+
+            <div class="week-info">
+                <h3>
+                    Week of {{ start_of_week|date:"F d" }} - {{ end_of_week|date:"d, Y" }}
+                </h3>
+                <p>Your created assignments</p>
+            </div>
+
+            <a href="?week_offset={{ week_offset|add:"1" }}" class="nav-btn">
+                Next Week →
+            </a>
+        </div>
+
         <div class="schedule-grid">
             {% if assignments_with_submissions %}
                 {% for item in assignments_with_submissions %}
