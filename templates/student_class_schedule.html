@@ -19,12 +19,20 @@
 
         <!-- Week Navigation -->
         <div class="week-nav">
-            <button class="nav-btn">← Previous Week</button>
+            <a href="?week_offset={{ week_offset|add:"-1" }}" class="nav-btn">
+                ← Previous Week
+            </a>
+
             <div class="week-info">
-                <h3>Week of January 15 - 21, 2024</h3>
-                <p>Current Semester: Fall 2024</p>
+                <h3>
+                    Week of {{ start_of_week|date:"F d" }} - {{ end_of_week|date:"d, Y" }}
+                </h3>
+                <p>Stay updated with your tasks</p>
             </div>
-            <button class="nav-btn">Next Week →</button>
+
+            <a href="?week_offset={{ week_offset|add:"1" }}" class="nav-btn">
+                Next Week →
+            </a>
         </div>
 
         <!-- View Toggle -->

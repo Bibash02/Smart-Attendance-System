@@ -1090,13 +1090,11 @@ def student_profile_edit(request):
 def student_class_shedule(request):
     user = request.user
 
-    # Check if student profile exists
     if not hasattr(user, 'studentprofile'):
         return redirect('login')
 
     student = user.studentprofile
 
-    # Safety: check class group assigned
     if not student.class_group:
         return render(request, 'student_class_schedule.html', {
             'assignments': [],
@@ -1104,11 +1102,27 @@ def student_class_shedule(request):
             'error': "No class group assigned to you."
         })
 
-    # All assignments for the student's class
+    # -------- WEEK LOGIC -------- #
+
+    week_offset = int(request.GET.get('week_offset', 0))
+
+    today = now().date()
+
+    # Get Monday of current week
+    start_of_week = today - timedelta(days=today.weekday())
+
+    # Apply offset (previous / next week)
+    start_of_week = start_of_week + timedelta(weeks=week_offset)
+
+    # End of week (Sunday)
+    end_of_week = start_of_week + timedelta(days=6)
+
+    # -------- FETCH ASSIGNMENTS -------- #
+
     assignments = Assignment.objects.filter(
-        class_group_id=student.class_group_id,
-        class_group__is_active=True
-    ).select_related('subject', 'teacher').order_by('-created_at')
+        class_group=student.class_group,
+        due_date__range=[start_of_week, end_of_week]
+    ).select_related('subject', 'teacher').order_by('due_date')
 
     # Submitted assignments
     submitted_ids = AssignmentSubmission.objects.filter(
@@ -1118,7 +1132,12 @@ def student_class_shedule(request):
     context = {
         'assignments': assignments,
         'submitted_ids': list(submitted_ids),
-        'today': now().date()  # Pass today to template
+        'today': today,
+
+        # Week data for UI
+        'start_of_week': start_of_week,
+        'end_of_week': end_of_week,
+        'week_offset': week_offset,
     }
 
     return render(request, 'student_class_schedule.html', context)
