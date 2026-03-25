@@ -21,7 +21,7 @@ from calendar import monthrange
 from django.db import transaction
 from django.urls import reverse
 from calendar import monthrange
-
+import re
 
 # Create your views here.
 def auth(request):
@@ -473,36 +473,59 @@ def add_student(request, group_id):
     group = get_object_or_404(ClassGroup, id=group_id)
 
     # Get form data
-    name = request.POST.get('student_name').strip()
-    student_id = request.POST.get('student_id').strip()
+    name = request.POST.get('student_name', '').strip()
+    student_id = request.POST.get('student_id', '').strip()
     email = request.POST.get('student_email', '').strip().lower()
-    password = request.POST.get('student_password', 'student123').strip()  # optional: teacher can provide password
+    password = request.POST.get('student_password', '').strip()
 
-    # Validate required fields
+    # ---------------- VALIDATIONS ---------------- #
+
+    # Required fields
     if not name or not student_id or not password:
         messages.error(request, 'Please fill all required fields.')
         return redirect('mark_attendance', group_id=group.id)
 
-    # Check duplicate student_id
+    # Student ID: must be exactly 4 digits
+    if not re.fullmatch(r'\d{4}', student_id):
+        messages.error(request, 'Student ID must be exactly 4 digits.')
+        return redirect('mark_attendance', group_id=group.id)
+
+    # Email validation (if provided)
+    if email:
+        if '@' not in email:
+            messages.error(request, 'Invalid email format (must contain @).')
+            return redirect('mark_attendance', group_id=group.id)
+
+    # Password validation
+    if len(password) < 6:
+        messages.error(request, 'Password must be at least 6 characters long.')
+        return redirect('mark_attendance', group_id=group.id)
+
+    # ---------------- DUPLICATE CHECKS ---------------- #
+
     if StudentProfile.objects.filter(student_id=student_id).exists():
         messages.error(request, 'Student ID already exists.')
         return redirect('mark_attendance', group_id=group.id)
-    
-    # Check duplicate username/email
-    if User.objects.filter(username=student_id).exists() or (email and User.objects.filter(email=email).exists()):
-        messages.error(request, "Username or email already exists.")
+
+    if User.objects.filter(username=student_id).exists():
+        messages.error(request, "Username already exists.")
         return redirect('mark_attendance', group_id=group.id)
 
-    # Create Django User
+    if email and User.objects.filter(email=email).exists():
+        messages.error(request, "Email already exists.")
+        return redirect('mark_attendance', group_id=group.id)
+
+    # ---------------- CREATE USER ---------------- #
+
     user = User.objects.create_user(
-        username=student_id,   # we can also use email as username if you prefer
+        username=student_id,
         email=email if email else None,
         password=password
     )
     user.first_name = name
     user.save()
 
-    # Create UserProfile (role = STUDENT)
+    # Create UserProfile
     UserProfile.objects.create(
         user=user,
         role='STUDENT'
@@ -517,16 +540,16 @@ def add_student(request, group_id):
         roll_no=StudentProfile.objects.filter(class_group=group).count() + 1
     )
 
-    # Optional: create enrollment
+    # Enrollment
     StudentEnrollment.objects.create(
         student=student,
         class_group=group
     )
 
-    messages.success(request, f'Student "{name}" added successfully. They can now login.')
+    messages.success(request, f'Student "{name}" added successfully.')
     return redirect('mark_attendance', group_id=group.id)
 
-
+@login_required
 def save_attendance(request, group, year, month):
     today = now().date()
 

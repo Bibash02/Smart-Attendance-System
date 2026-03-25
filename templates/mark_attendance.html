@@ -147,10 +147,7 @@
 
                     <div class="form-group">
                         <label>Student ID</label>
-                        <input type="text"
-                            name="student_id"
-                            placeholder="Enter username or student ID"
-                            required>
+                        <input type="text" name="student_id" pattern="\d{4}" maxlength="4" placeholder="Enter ID [4 numbers]" required>
                     </div>
 
                     <div class="form-group">
@@ -162,10 +159,7 @@
 
                     <div class="form-group">
                         <label>Password</label>
-                        <input type="password"
-                            name="student_password"
-                            placeholder="Enter password for student"
-                            required>
+                        <input type="password" name="student_password" minlength="6" placeholder="Enter password [6 char]" required>
                     </div>
                 </div>
 
