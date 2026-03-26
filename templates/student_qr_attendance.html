@@ -1,55 +1,72 @@
-<!-- templates/student/scan_qr.html -->
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Scan QR for Attendance</title>
+    <title>Scan QR for Attendance - {{ group.name }}</title>
     <link rel="stylesheet" href="{% static 'css/student.css' %}">
     <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
 </head>
 <body>
+    <a href="{% url 'student_dashboard' %}" class="back-link">← Back to Dashboard</a>
     <div class="container">
         <h2>Scan QR Code for Attendance - {{ group.name }}</h2>
 
-        <!-- QR Scanner always rendered -->
-        <div id="qr-reader" style="width:500px; margin:auto;"></div>
+        {% if qr %}
+            <!-- QR Info -->
+            <div style="text-align:center; margin:20px 0;">
+                <p>📅 Date: {{ qr.date }}</p>
+                <img src="{{ qr_image_url }}" alt="QR Code" style="max-width:250px; margin:15px 0;">
+                <p>⏳ Expires at: {{ qr.expires_at|date:"H:i:s" }}</p>
+                <p id="qrTimer" style="font-weight:bold; color:#dc3545;"></p>
+            </div>
 
-        <form method="post" id="qrForm">
-            {% csrf_token %}
-            <input type="hidden" name="qr_token" id="qr_token">
-        </form>
+            <!-- QR Scanner -->
+            <div id="qr-reader" style="width:500px; margin:auto;"></div>
+            <form method="post" id="qrForm">
+                {% csrf_token %}
+                <input type="hidden" name="qr_token" id="qr_token">
+            </form>
+            <p id="scan-result"></p>
 
-        <p id="scan-result" style="text-align:center; color:green; font-weight:bold; margin-top:10px;"></p>
-
-        {% if not qr %}
-            <p style="color:gray; text-align:center; margin-top:15px;">
-                ⚠️ No QR code generated for today by your teacher.
+        {% else %}
+            <p style="color:gray; text-align:center;">
+                No QR code generated for today by your teacher.
             </p>
         {% endif %}
     </div>
 
+    {% if qr %}
     <script>
+        // Countdown timer
+        const expireTime = new Date("{{ qr.expires_at|date:'Y-m-d H:i:s' }}").getTime();
+        const timerEl = document.getElementById("qrTimer");
+
+        const interval = setInterval(() => {
+            const now = new Date().getTime();
+            const diff = expireTime - now;
+
+            if (diff <= 0) {
+                clearInterval(interval);
+                timerEl.innerHTML = "⛔ QR Expired - Attendance Closed";
+                document.querySelector("img").style.opacity = "0.3";
+            } else {
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                timerEl.innerHTML = "⏱ Time Left: " + minutes + "m " + seconds + "s";
+            }
+        }, 1000);
+
+        // QR Scanner
         function onScanSuccess(decodedText, decodedResult) {
-            // Fill hidden input and submit form
             document.getElementById('qr_token').value = decodedText;
-            document.getElementById('scan-result').innerText = "✅ QR Scanned. Submitting...";
             document.getElementById('qrForm').submit();
         }
 
-        function onScanError(errorMessage) {
-            // optional: show scan errors
-            console.warn("QR Scan Error:", errorMessage);
-        }
-
-        // Initialize QR Scanner
         var html5QrcodeScanner = new Html5QrcodeScanner(
-            "qr-reader",
-            { fps: 10, qrbox: 250 },
-            /* verbose= */ false
-        );
-
-        html5QrcodeScanner.render(onScanSuccess, onScanError);
+            "qr-reader", { fps: 10, qrbox: 250 });
+        html5QrcodeScanner.render(onScanSuccess);
     </script>
+    {% endif %}
 </body>
 </html>

@@ -535,21 +535,21 @@ def scan_attendance_qr(request):
 def student_qr_attendance(request, group_id):
     student = StudentProfile.objects.get(user=request.user)
     today = date.today()
-    group = get_object_or_404(ClassGroup, id=group_id)
 
-    # Get today's QR for the group
-    qr = AttendanceQR.objects.filter(group=group, date=today).first()
+    # Get QR for today
+    try:
+        qr = AttendanceQR.objects.get(group_id=group_id, date=today)
+    except AttendanceQR.DoesNotExist:
+        qr = None
+
+    group = ClassGroup.objects.get(id=group_id)
 
     if request.method == 'POST':
         token = request.POST.get('qr_token')
-        if not qr:
-            messages.error(request, "No QR generated for today!")
-            return redirect('student_dashboard')
 
-        # Check if scanned token matches today's QR
-        if qr.token != token:
+        if not qr or token != str(qr.token):
             messages.error(request, "Invalid or expired QR code!")
-            return redirect('scan_attendance_qr', group_id=group.id)
+            return redirect('student_qr_attendance', group_id=group_id)
 
         # Mark attendance
         Attendance.objects.update_or_create(
@@ -562,9 +562,9 @@ def student_qr_attendance(request, group_id):
         return redirect('student_dashboard')
 
     context = {
-        'group': group,
         'qr': qr,
-        'today': today,
+        'group': group,
+        'qr_image_url': qr.qr_code_file.url if qr else None
     }
     return render(request, 'student_qr_attendance.html', context)
 
