@@ -119,12 +119,32 @@
                     </div>
                 </div>
 
+                <button type="button" class="btn-add-student" onclick="generateQR()">
+                    📷 Generate QR
+                </button>
+
                 <button type="submit" class="btn-submit">
                     💾 Save Attendance
                 </button>
             </div>
         </div>
     </form>
+
+    <!-- QR Modal -->
+    <div class="modal" id="qrModal">
+        <div class="modal-content">
+            <div class="modal-header">📷 QR Code for Attendance</div>
+            <div style="text-align:center; padding:20px;">
+                <h3 id="qrDate"></h3>
+                <img id="qrImage" src="" style="max-width:250px; margin:15px 0;">
+                <p id="qrExpiry" style="font-weight:600; color:#555;"></p>
+                <p id="qrTimer" style="font-size:18px; font-weight:bold; color:#dc3545;"></p>
+            </div>
+            <div class="modal-footer">
+                <button onclick="closeQRModal()" class="btn-cancel">Close</button>
+            </div>
+        </div>
+    </div>
 
     <!-- ADD STUDENT MODAL -->
     <div class="modal" id="addStudentModal">
@@ -208,6 +228,47 @@
         };
 
     });
+
+    function generateQR() {
+        fetch("{% url 'generate_qr' group.id %}")
+        .then(res => res.json())
+        .then(data => {
+            // Absolute URL ensures image shows
+            document.getElementById("qrImage").src = data.qr_url;
+
+            const today = new Date(data.date);
+            document.getElementById("qrDate").innerHTML = "📅 Date: " + today.toDateString();
+
+            const expireTime = new Date(data.expires_at);
+            document.getElementById("qrExpiry").innerHTML = "⏳ Expires at: " + expireTime.toLocaleTimeString();
+
+            document.getElementById("qrModal").classList.add("active");
+            startTimer(expireTime);
+        });
+    }
+
+    function closeQRModal() {
+        document.getElementById("qrModal").classList.remove("active");
+    }
+
+    function startTimer(expireTime) {
+        const timerEl = document.getElementById("qrTimer");
+        const interval = setInterval(() => {
+            const now = new Date().getTime();
+            const end = new Date(expireTime).getTime();
+            const diff = end - now;
+
+            if (diff <= 0) {
+                clearInterval(interval);
+                timerEl.innerHTML = "⛔ QR Expired - Attendance Closed";
+                document.getElementById("qrImage").style.opacity = "0.3";
+            } else {
+                const minutes = Math.floor(diff / 60000);
+                const seconds = Math.floor((diff % 60000) / 1000);
+                timerEl.innerHTML = "⏱ Time Left: " + minutes + "m " + seconds + "s";
+            }
+        }, 1000);
+    }
     </script>
 </body>
 </html>

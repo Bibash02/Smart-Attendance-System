@@ -137,8 +137,22 @@
                 {% endfor %}
                 
                 <div class="quick-actions">
-                    <a href="{% url 'student_mark_attendance' %}" class="action-btn">📸 Mark Attendance</a>
-                    <a href="{% url 'student_attendance' %}" class="action-btn secondary">📋 View Records</a>
+    
+                    <!-- Manual Attendance -->
+                    <a href="{% url 'student_mark_attendance' %}" class="action-btn">
+                        📸 Mark Attendance
+                    </a>
+
+                    <!-- NEW: Scan QR -->
+                    <a href="{% url 'student_qr_attendance' student_group.id %}" class="action-btn" style="background:#17a2b8;">
+                        📷 Scan QR
+                    </a>
+
+                    <!-- View Records -->
+                    <a href="{% url 'student_qr_attendance' student_group.id %}" class="action-btn secondary">
+                        📋 View Records
+                    </a>
+
                 </div>
             </div>
 

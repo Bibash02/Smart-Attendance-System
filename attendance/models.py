@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+import uuid
+from django.utils import timezone
+from datetime import timedelta
 
 # Create your models here.
 class UserProfile(models.Model):
@@ -162,3 +165,18 @@ class AssignmentSubmission(models.Model):
 
     class Meta:
         unique_together = ('assignment', 'student')
+
+class AttendanceQR(models.Model):
+    group = models.ForeignKey(ClassGroup, on_delete=models.CASCADE)
+    date = models.DateField()
+    qr_code_file = models.ImageField(upload_to='qr_codes/')
+    expires_at = models.DateTimeField()
+    token = models.CharField(max_length=64, unique=True, default=uuid.uuid4)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['group', 'date'], name='unique_qr_per_day')
+        ]
+
+    def is_valid(self):
+        return timezone.now() < self.expires_at

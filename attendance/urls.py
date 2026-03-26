@@ -34,9 +34,11 @@ urlpatterns = [
     path('teacher/assignment/edit/<int:id>/', edit_assignment, name='edit_assignment'),
     path('teacher/assignment/delete/<int:id>/', delete_assignment, name='delete_assignment'),
     path('teacher/view-assignment', view_teacher_assignments, name='view_teacher_assignments'),
-    # path('teacher/submission/<int:submission_id>/', view_submission, name='view_submission'),
 
     path('teacher/assignment/<int:assignment_id>/submissions/', view_submissions_list, name='view_submissions_list'),
+
+    path('teacher/generate-qr/<int:group_id>/', generate_qr, name='generate_qr'),
+    path('teacher/scan-attendance/', scan_attendance_qr, name='scan_attendance_qr'),
 
     path('student/dashboard', student_dashboard, name='student_dashboard'),
     path('student/attendance', student_attendance, name='student_attendance'),
@@ -47,4 +49,6 @@ urlpatterns = [
     path('student/class/shedule', student_class_shedule, name='student_class_shedule'),
 
     path('student/submit-assignment/<int:id>/', submit_assignment, name='submit_assignment'),
+
+    path('student/qr/<int:group_id>/', student_qr_attendance, name='student_qr_attendance'),
 ]

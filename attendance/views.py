@@ -15,6 +15,12 @@ from django.contrib.auth import login, authenticate, logout
 from .utils import redirect_user_by_role
 from django.views.decorators.csrf import csrf_exempt
 import json
+import qrcode
+from io import BytesIO
+from django.core.files import File
+import os
+from django.conf import settings
+from django.http import JsonResponse, HttpResponse
 from django.http import HttpResponseForbidden
 from datetime import date, datetime, timedelta
 from calendar import monthrange
@@ -465,6 +471,103 @@ def mark_attendance(request, group_id):
 
     return render(request, 'mark_attendance.html', context)
 
+def generate_qr(request, group_id):
+    group = ClassGroup.objects.get(id=group_id)
+    today = date.today()
+
+    # Get or create QR
+    qr, created = AttendanceQR.objects.get_or_create(
+        group=group,
+        date=today,
+        defaults={
+            'expires_at': timezone.now() + timedelta(hours=1),
+            'token': str(uuid.uuid4()),
+        }
+    )
+
+    # If QR image not generated, create it
+    if created or not qr.qr_code_file:
+        qr_data = f"{qr.token}|{group.id}|{today}"
+        qr_img = qrcode.make(qr_data)
+        buffer = BytesIO()
+        qr_img.save(buffer, format='PNG')
+        filename = f"qr_{group.id}_{today}.png"
+        qr.qr_code_file.save(filename, File(buffer), save=True)
+
+    # Return absolute URL for student panel
+    qr_url = request.build_absolute_uri(qr.qr_code_file.url)
+
+    return JsonResponse({
+        'qr_url': qr_url,
+        'date': str(qr.date),
+        'expires_at': qr.expires_at.isoformat(),
+    })
+
+def scan_attendance_qr(request):
+    token = request.GET.get('token')
+
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    try:
+        qr = AttendanceQR.objects.get(token=token)
+    except AttendanceQR.DoesNotExist:
+        return HttpResponse("❌ Invalid QR")
+
+    if not qr.is_valid():
+        return HttpResponse("⛔ QR Expired")
+
+    student = request.user.studentprofile
+
+    Attendance.objects.update_or_create(
+        student=student,
+        group=qr.group,
+        date=qr.date,
+        defaults={
+            'status': 'PRESENT',
+            'is_locked': True
+        }
+    )
+
+    return HttpResponse("✅ Attendance Marked Successfully")
+
+@login_required
+def student_qr_attendance(request, group_id):
+    student = StudentProfile.objects.get(user=request.user)
+    today = date.today()
+    group = get_object_or_404(ClassGroup, id=group_id)
+
+    # Get today's QR for the group
+    qr = AttendanceQR.objects.filter(group=group, date=today).first()
+
+    if request.method == 'POST':
+        token = request.POST.get('qr_token')
+        if not qr:
+            messages.error(request, "No QR generated for today!")
+            return redirect('student_dashboard')
+
+        # Check if scanned token matches today's QR
+        if qr.token != token:
+            messages.error(request, "Invalid or expired QR code!")
+            return redirect('scan_attendance_qr', group_id=group.id)
+
+        # Mark attendance
+        Attendance.objects.update_or_create(
+            student=student,
+            group=group,
+            date=today,
+            defaults={'status': 'PRESENT', 'is_locked': True}
+        )
+        messages.success(request, f"Attendance marked for {group.name} ✅")
+        return redirect('student_dashboard')
+
+    context = {
+        'group': group,
+        'qr': qr,
+        'today': today,
+    }
+    return render(request, 'student_qr_attendance.html', context)
+
 @login_required
 def add_student(request, group_id):
     if request.method != 'POST':
@@ -811,7 +914,6 @@ def student_detail_report(request, student_id):
 
 @login_required
 def student_dashboard(request):
-
     user = request.user
 
     # Ensure this account is a student
@@ -857,6 +959,9 @@ def student_dashboard(request):
 
     assignments = assignments[:3]
 
+    # Assuming student has a single group
+    student_group = student.class_group  # or student.class_group.first() if many
+
     context = {
         'student': student,
         'total_present': total_present,
@@ -866,6 +971,8 @@ def student_dashboard(request):
         'streak': streak, 
         'today_assignments': assignments,
         'submitted_ids': list(submitted_ids),
+        'profile': student,
+        'student_group': student_group,
     }
 
     return render(request, 'student_dashboard.html', context)
@@ -897,28 +1004,6 @@ def submit_assignment(request, id):
     return render(request, 'submit_assignment.html', {
         'assignment': assignment
     })
-
-# def view_submission(request, assignment_id):
-#     assignment = get_object_or_404(Assignment, id = assignment_id, teacher = request.user)
-
-#     submissions = AssignmentSubmission.objects.filter(assignment = assignment).select_related('student__user')
-
-#     if request.method == "POST":
-#         submission_id = request.POST.get('submission_id')
-#         marks = request.POST.get('marks')
-#         feedback = request.POST.get('feedback')
-
-#         submission = AssignmentSubmission.objects.get(id = submission_id)
-#         submission.marks = marks
-#         submission.feedback = feedback
-#         submission.save()
-
-#         return redirect('view_submissions', assignment_id = assignment_id)
-    
-#     return render(request, 'view_submissions.html', {
-#         'assignment': assignment,
-#         'submissions': submissions
-#     })
 
 @login_required
 def student_attendance(request):

@@ -71,3 +71,7 @@ class AssignmentAdmin(admin.ModelAdmin):
 @admin.register(AssignmentSubmission)
 class AssignmentSubmissionAdmin(admin.ModelAdmin):
     list_display = ['id', 'assignment', 'student', 'submitted_file', 'submitted_at', 'marks', 'feedback']
+
+@admin.register(AttendanceQR)
+class AttendanceQRAdmin(admin.ModelAdmin):
+    list_display = ['id', 'group', 'date', 'qr_code_file', 'expires_at', 'token']

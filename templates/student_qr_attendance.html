@@ -1,0 +1,55 @@
+<!-- templates/student/scan_qr.html -->
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Scan QR for Attendance</title>
+    <link rel="stylesheet" href="{% static 'css/student.css' %}">
+    <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>Scan QR Code for Attendance - {{ group.name }}</h2>
+
+        <!-- QR Scanner always rendered -->
+        <div id="qr-reader" style="width:500px; margin:auto;"></div>
+
+        <form method="post" id="qrForm">
+            {% csrf_token %}
+            <input type="hidden" name="qr_token" id="qr_token">
+        </form>
+
+        <p id="scan-result" style="text-align:center; color:green; font-weight:bold; margin-top:10px;"></p>
+
+        {% if not qr %}
+            <p style="color:gray; text-align:center; margin-top:15px;">
+                ⚠️ No QR code generated for today by your teacher.
+            </p>
+        {% endif %}
+    </div>
+
+    <script>
+        function onScanSuccess(decodedText, decodedResult) {
+            // Fill hidden input and submit form
+            document.getElementById('qr_token').value = decodedText;
+            document.getElementById('scan-result').innerText = "✅ QR Scanned. Submitting...";
+            document.getElementById('qrForm').submit();
+        }
+
+        function onScanError(errorMessage) {
+            // optional: show scan errors
+            console.warn("QR Scan Error:", errorMessage);
+        }
+
+        // Initialize QR Scanner
+        var html5QrcodeScanner = new Html5QrcodeScanner(
+            "qr-reader",
+            { fps: 10, qrbox: 250 },
+            /* verbose= */ false
+        );
+
+        html5QrcodeScanner.render(onScanSuccess, onScanError);
+    </script>
+</body>
+</html>
